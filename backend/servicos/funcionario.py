@@ -5,6 +5,8 @@ from servicos.database.conector import DatabaseManager
 class FuncionarioDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
+        
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
 
     def get_funcionarios(self, cpf: str = None, endereco_filial: str = None):
         query = "SELECT * FROM funcionario"

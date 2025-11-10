@@ -28,6 +28,7 @@ def post_funcionario():
         return jsonify("Funcionário cadastrado"), 200
     return jsonify("Erro ao cadastrar funcionário"), 400
 
+# atualizar infos de um funcionário
 @funcionario_blueprint.route("/funcionario/<cpf>", methods=["PUT"])
 def put_funcionario(cpf):
     json = request.get_json()

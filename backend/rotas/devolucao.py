@@ -31,17 +31,7 @@ def post_devolucao():
         return jsonify("Devolução cadastrada"), 200
     return jsonify("Erro ao cadastrar devolução"), 400
 
-@devolucao_blueprint.route("/devolucao/<int:id_devolucao>", methods=["PUT"])
-def put_devolucao(id_devolucao):
-    json = request.get_json()
-    id_venda = json.get("id_venda")
-    credito = json.get("credito")
-    cpf_cliente = json.get("cpf_cliente")
 
-    result = DevolucaoDatabase().atualiza_devolucao(id_devolucao, id_venda, credito, cpf_cliente)
-    if result:
-        return jsonify("Devolução atualizada"), 200
-    return jsonify("Erro ao atualizar devolução"), 400
 
 @devolucao_blueprint.route("/devolucao/<int:id_devolucao>", methods=["DELETE"])
 def delete_devolucao(id_devolucao):

@@ -6,6 +6,7 @@ class ProdutoDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
     def get_produtos(self, id_produto: int = None, endereco_filial: str = None, categoria: str = None):
         query = "SELECT * FROM produto"
         conditions = []
@@ -21,9 +22,6 @@ class ProdutoDatabase():
         
         return self.db.execute_select_all(query)
 
-    def get_produto_by_id(self, id_produto: int):
-        query = f"SELECT * FROM produto WHERE idproduto = {id_produto}"
-        return self.db.execute_select_one(query)
     
     def cadastra_produto(self, id_produto: int, categoria: str, cor: str, tamanho: str, preco_venda: float, endereco_filial: str, quant_min: str, quantidade: str):
         statement = f"INSERT INTO produto (idproduto, categoria, cor, tamanho, precovenda, enderecofilial, quant_min, quantidade) VALUES ({id_produto}, '{categoria}', '{cor}', '{tamanho}', {preco_venda}, '{endereco_filial}', '{quant_min}', '{quantidade}')"

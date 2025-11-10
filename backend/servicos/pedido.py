@@ -6,6 +6,7 @@ class PedidoDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
     def get_pedidos(self, endereco_filial: str = None, cnpj_fornec: str = None, id_produto: int = None):
         query = "SELECT * FROM pedido"
         conditions = []

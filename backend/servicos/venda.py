@@ -6,6 +6,7 @@ class VendaDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
     def get_vendas(self, id_venda: int = None, cpf_funcionario: str = None, cpf_cliente: str = None):
         query = "SELECT * FROM venda"
         conditions = []
@@ -20,10 +21,6 @@ class VendaDatabase():
             query += " WHERE " + " AND ".join(conditions)
         
         return self.db.execute_select_all(query)
-
-    def get_venda_by_id(self, id_venda: int):
-        query = f"SELECT * FROM venda WHERE idvenda = {id_venda}"
-        return self.db.execute_select_one(query)
     
     def cadastra_venda(self, id_venda: int, data_compra: str, status: str, valor_desconto: float, cpf_funcionario: str, cpf_cliente: str, comissao: float, forma_pag: str = None, parcelas: int = None):
         if forma_pag and parcelas is not None:

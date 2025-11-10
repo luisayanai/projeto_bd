@@ -5,11 +5,13 @@ from servicos.cliente import ClienteDatabase
 
 cliente_blueprint = Blueprint("cliente", __name__)
 
+# busca cliente via cpf
 @cliente_blueprint.route("/cliente", methods=["GET"])
 def get_clientes():
     cpf = request.args.get("cpf", "")
     return jsonify(ClienteDatabase().get_clientes(cpf)), 200
 
+# cadastra cliente (cpf, nome, end)
 @cliente_blueprint.route("/cliente", methods=["POST"])
 def post_cliente():
     json = request.get_json()
@@ -25,6 +27,7 @@ def post_cliente():
         return jsonify("Cliente cadastrado"), 200
     return jsonify("Erro ao cadastrar cliente"), 400
 
+# atualiza nome, end do cliente
 @cliente_blueprint.route("/cliente/<cpf>", methods=["PUT"])
 def put_cliente(cpf):
     json = request.get_json()

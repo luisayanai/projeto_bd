@@ -18,25 +18,26 @@ def post_cliente_fidelizado():
     json = request.get_json()
     id_cadastro = json.get("id_cadastro")
     cpf_cliente = json.get("cpf_cliente")
-    ponto = json.get("ponto")
+    pontos = json.get("pontos")
     email = json.get("email")
 
     if not id_cadastro or not cpf_cliente:
         return jsonify("ID do cadastro e CPF do cliente são obrigatórios"), 400
 
-    result = ClienteFidelizadoDatabase().cadastra_cliente_fidelizado(id_cadastro, cpf_cliente, ponto, email)
+    result = ClienteFidelizadoDatabase().cadastra_cliente_fidelizado(id_cadastro, cpf_cliente, pontos, email)
     if result:
         return jsonify("Cliente fidelizado cadastrado"), 200
     return jsonify("Erro ao cadastrar cliente fidelizado"), 400
 
+# atualiza infos do cliente cadastrado
 @cliente_fidelizado_blueprint.route("/cliente_fidelizado/<int:id_cadastro>", methods=["PUT"])
 def put_cliente_fidelizado(id_cadastro):
     json = request.get_json()
-    ponto = json.get("ponto")
+    pontos = json.get("pontos")
     email = json.get("email")
     cpf_cliente = json.get("cpf_cliente")
 
-    result = ClienteFidelizadoDatabase().atualiza_cliente_fidelizado(id_cadastro, ponto, email, cpf_cliente)
+    result = ClienteFidelizadoDatabase().atualiza_cliente_fidelizado(id_cadastro, pontos, email, cpf_cliente)
     if result:
         return jsonify("Cliente fidelizado atualizado"), 200
     return jsonify("Erro ao atualizar cliente fidelizado"), 400

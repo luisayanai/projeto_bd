@@ -31,20 +31,6 @@ def post_fornecedor():
         return jsonify("Fornecedor cadastrado"), 200
     return jsonify("Erro ao cadastrar fornecedor"), 400
 
-@fornecedor_blueprint.route("/fornecedor/<cnpj>", methods=["PUT"])
-def put_fornecedor(cnpj):
-    json = request.get_json()
-    nome = json.get("nome")
-    telefone = json.get("telefone")
-    email = json.get("email")
-    id_produto = json.get("id_produto")
-    preco = json.get("preco")
-
-    result = FornecedorDatabase().atualiza_fornecedor(cnpj, nome, telefone, email, id_produto, preco)
-    if result:
-        return jsonify("Fornecedor atualizado"), 200
-    return jsonify("Erro ao atualizar fornecedor"), 400
-
 @fornecedor_blueprint.route("/fornecedor/<cnpj>", methods=["DELETE"])
 def delete_fornecedor(cnpj):
     result = FornecedorDatabase().deleta_fornecedor(cnpj)

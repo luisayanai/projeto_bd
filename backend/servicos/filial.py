@@ -6,6 +6,7 @@ class FilialDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
     def get_filiais(self, endereco: str = None):
         query = "SELECT * FROM filial"
         if endereco:
@@ -24,19 +25,6 @@ class FilialDatabase():
         else:
             statement = f"INSERT INTO filial (endereco, cpfgerente) VALUES ('{endereco}', '{cpf_gerente}')"
         
-        return self.db.execute_statement(statement)
-
-    def atualiza_filial(self, endereco: str, telefone: int = None, cpf_gerente: str = None):
-        updates = []
-        if telefone is not None:
-            updates.append(f"telefone = {telefone}")
-        if cpf_gerente:
-            updates.append(f"cpfgerente = '{cpf_gerente}'")
-        
-        if not updates:
-            return False
-        
-        statement = f"UPDATE filial SET {', '.join(updates)} WHERE endereco = '{endereco}'"
         return self.db.execute_statement(statement)
 
     def deleta_filial(self, endereco: str):

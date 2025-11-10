@@ -6,6 +6,7 @@ class FornecedorDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
     def get_fornecedores(self, cnpj: str = None, id_produto: int = None):
         query = "SELECT * FROM fornecedor"
         conditions = []
@@ -34,25 +35,6 @@ class FornecedorDatabase():
         else:
             statement = f"INSERT INTO fornecedor (cnpj, nome, idproduto, preco) VALUES ('{cnpj}', '{nome}', {id_produto}, {preco})"
         
-        return self.db.execute_statement(statement)
-
-    def atualiza_fornecedor(self, cnpj: str, nome: str = None, telefone: int = None, email: str = None, id_produto: int = None, preco: int = None):
-        updates = []
-        if nome:
-            updates.append(f"nome = '{nome}'")
-        if telefone is not None:
-            updates.append(f"telefone = {telefone}")
-        if email:
-            updates.append(f"email = '{email}'")
-        if id_produto is not None:
-            updates.append(f"idproduto = {id_produto}")
-        if preco is not None:
-            updates.append(f"preco = {preco}")
-        
-        if not updates:
-            return False
-        
-        statement = f"UPDATE fornecedor SET {', '.join(updates)} WHERE cnpj = '{cnpj}'"
         return self.db.execute_statement(statement)
 
     def deleta_fornecedor(self, cnpj: str):

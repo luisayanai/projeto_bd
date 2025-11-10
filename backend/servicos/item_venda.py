@@ -6,6 +6,7 @@ class ItemVendaDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
     def get_itens_venda(self, id_venda: int = None, id_produto: int = None):
         query = "SELECT * FROM item_venda"
         conditions = []

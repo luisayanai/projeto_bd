@@ -6,6 +6,7 @@ class ClienteDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
     def get_clientes(self, cpf: str = None):
         query = "SELECT * FROM cliente"
         if cpf:
@@ -13,10 +14,12 @@ class ClienteDatabase():
         
         return self.db.execute_select_all(query)
 
-    def get_cliente_by_cpf(self, cpf: str):
+    ''' redundante com a get_clientes?????
+    def get_cliente_by_cpf(self, cpf: str): 
         query = f"SELECT * FROM cliente WHERE cpf = '{cpf}'"
         return self.db.execute_select_one(query)
-    
+    '''
+
     def cadastra_cliente(self, cpf: str, nome: str, endereco: str = None):
         if endereco:
             statement = f"INSERT INTO cliente (cpf, nome, endereco) VALUES ('{cpf}', '{nome}', '{endereco}')"

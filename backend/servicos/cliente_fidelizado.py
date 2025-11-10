@@ -6,6 +6,7 @@ class ClienteFidelizadoDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
+    # funções de controle (queries simples, não vamos mostrar na apresentação)
     def get_clientes_fidelizados(self, id_cadastro: int = None, cpf_cliente: str = None):
         query = "SELECT * FROM cliente_fidelizado"
         conditions = []
@@ -35,10 +36,10 @@ class ClienteFidelizadoDatabase():
         
         return self.db.execute_statement(statement)
 
-    def atualiza_cliente_fidelizado(self, id_cadastro: int, ponto: str = None, email: str = None, cpf_cliente: str = None):
+    def atualiza_cliente_fidelizado(self, id_cadastro: int, pontos: str = None, email: str = None, cpf_cliente: str = None):
         updates = []
-        if ponto:
-            updates.append(f"ponto = '{ponto}'")
+        if pontos:
+            updates.append(f"ponto = '{pontos}'")
         if email:
             updates.append(f"email = '{email}'")
         if cpf_cliente:

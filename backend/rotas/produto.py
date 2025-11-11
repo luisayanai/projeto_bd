@@ -17,7 +17,6 @@ def get_produtos():
 @produto_blueprint.route("/produto", methods=["POST"])
 def post_produto():
     json = request.get_json()
-    id_produto = json.get("id_produto")
     categoria = json.get("categoria")
     cor = json.get("cor")
     tamanho = json.get("tamanho")
@@ -26,10 +25,10 @@ def post_produto():
     quant_min = json.get("quant_min")
     quantidade = json.get("quantidade")
 
-    if not all([id_produto, categoria, cor, tamanho, preco_venda, endereco_filial, quant_min, quantidade]):
-        return jsonify("Todos os campos são obrigatórios"), 400
+    if not all([categoria, cor, tamanho, preco_venda, endereco_filial, quant_min, quantidade]):
+        return jsonify("Categoria, cor, tamanho, preço de venda, endereço da filial, quantidade mínima e quantidade são obrigatórios"), 400
 
-    result = ProdutoDatabase().cadastra_produto(id_produto, categoria, cor, tamanho, preco_venda, endereco_filial, quant_min, quantidade)
+    result = ProdutoDatabase().cadastra_produto(categoria, cor, tamanho, preco_venda, endereco_filial, quant_min, quantidade)
     if result:
         return jsonify("Produto cadastrado"), 200
     return jsonify("Erro ao cadastrar produto"), 400

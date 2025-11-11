@@ -18,15 +18,14 @@ def get_devolucoes():
 @devolucao_blueprint.route("/devolucao", methods=["POST"])
 def post_devolucao():
     json = request.get_json()
-    id_devolucao = json.get("id_devolucao")
     id_venda = json.get("id_venda")
     credito = json.get("credito")
     cpf_cliente = json.get("cpf_cliente")
 
-    if not id_devolucao or not id_venda or credito is None or not cpf_cliente:
-        return jsonify("ID da devolução, ID da venda, crédito e CPF do cliente são obrigatórios"), 400
+    if not id_venda or credito is None or not cpf_cliente:
+        return jsonify("ID da venda, crédito e CPF do cliente são obrigatórios"), 400
 
-    result = DevolucaoDatabase().cadastra_devolucao(id_devolucao, id_venda, credito, cpf_cliente)
+    result = DevolucaoDatabase().cadastra_devolucao(id_venda, credito, cpf_cliente)
     if result:
         return jsonify("Devolução cadastrada"), 200
     return jsonify("Erro ao cadastrar devolução"), 400

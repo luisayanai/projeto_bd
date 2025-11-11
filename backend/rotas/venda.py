@@ -17,7 +17,6 @@ def get_vendas():
 @venda_blueprint.route("/venda", methods=["POST"])
 def post_venda():
     json = request.get_json()
-    id_venda = json.get("id_venda")
     data_compra = json.get("data_compra")
     status = json.get("status")
     valor_desconto = json.get("valor_desconto")
@@ -27,10 +26,10 @@ def post_venda():
     forma_pag = json.get("forma_pag")
     parcelas = json.get("parcelas")
 
-    if not id_venda or not data_compra or not status or valor_desconto is None or not cpf_funcionario or not cpf_cliente or comissao is None:
-        return jsonify("ID da venda, data da compra, status, valor do desconto, CPF do funcionário, CPF do cliente e comissão são obrigatórios"), 400
+    if not data_compra or not status or valor_desconto is None or not cpf_funcionario or not cpf_cliente or comissao is None:
+        return jsonify("Data da compra, status, valor do desconto, CPF do funcionário, CPF do cliente e comissão são obrigatórios"), 400
 
-    result = VendaDatabase().cadastra_venda(id_venda, data_compra, status, valor_desconto, cpf_funcionario, cpf_cliente, comissao, forma_pag, parcelas)
+    result = VendaDatabase().cadastra_venda(data_compra, status, valor_desconto, cpf_funcionario, cpf_cliente, comissao, forma_pag, parcelas)
     if result:
         return jsonify("Venda cadastrada"), 200
     return jsonify("Erro ao cadastrar venda"), 400

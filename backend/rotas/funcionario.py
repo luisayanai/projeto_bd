@@ -9,7 +9,10 @@ funcionario_blueprint = Blueprint("funcionario", __name__)
 def get_funcionarios():
     cpf = request.args.get("cpf", "")
     endereco_filial = request.args.get("endereco_filial", "")
-    return jsonify(FuncionarioDatabase().get_funcionarios(cpf, endereco_filial)), 200
+    resultado = FuncionarioDatabase().get_funcionarios(cpf, endereco_filial)
+    
+    if resultado: return jsonify(resultado), 200
+    else: return jsonify('Funcionário não encontrado'), 400
 
 @funcionario_blueprint.route("/funcionario", methods=["POST"])
 def post_funcionario():

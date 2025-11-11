@@ -24,15 +24,15 @@ class ClienteFidelizadoDatabase():
         query = f"SELECT * FROM cliente_fidelizado WHERE idcadastro = {id_cadastro}"
         return self.db.execute_select_one(query)
     
-    def cadastra_cliente_fidelizado(self, id_cadastro: int, cpf_cliente: str, ponto: str = None, email: str = None):
+    def cadastra_cliente_fidelizado(self, cpf_cliente: str, ponto: str = None, email: str = None):
         if ponto and email:
-            statement = f"INSERT INTO cliente_fidelizado (idcadastro, ponto, email, cpfcliente) VALUES ({id_cadastro}, '{ponto}', '{email}', '{cpf_cliente}')"
+            statement = f"INSERT INTO cliente_fidelizado (ponto, email, cpfcliente) VALUES ('{ponto}', '{email}', '{cpf_cliente}')"
         elif ponto:
-            statement = f"INSERT INTO cliente_fidelizado (idcadastro, ponto, cpfcliente) VALUES ({id_cadastro}, '{ponto}', '{cpf_cliente}')"
+            statement = f"INSERT INTO cliente_fidelizado (ponto, cpfcliente) VALUES ('{ponto}', '{cpf_cliente}')"
         elif email:
-            statement = f"INSERT INTO cliente_fidelizado (idcadastro, email, cpfcliente) VALUES ({id_cadastro}, '{email}', '{cpf_cliente}')"
+            statement = f"INSERT INTO cliente_fidelizado (email, cpfcliente) VALUES ('{email}', '{cpf_cliente}')"
         else:
-            statement = f"INSERT INTO cliente_fidelizado (idcadastro, cpfcliente) VALUES ({id_cadastro}, '{cpf_cliente}')"
+            statement = f"INSERT INTO cliente_fidelizado (cpfcliente) VALUES ('{cpf_cliente}')"
         
         return self.db.execute_statement(statement)
 

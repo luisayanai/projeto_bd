@@ -23,8 +23,8 @@ class ProdutoDatabase():
         return self.db.execute_select_all(query)
 
     
-    def cadastra_produto(self, id_produto: int, categoria: str, cor: str, tamanho: str, preco_venda: float, endereco_filial: str, quant_min: str, quantidade: str):
-        statement = f"INSERT INTO produto (idproduto, categoria, cor, tamanho, precovenda, enderecofilial, quant_min, quantidade) VALUES ({id_produto}, '{categoria}', '{cor}', '{tamanho}', {preco_venda}, '{endereco_filial}', '{quant_min}', '{quantidade}')"
+    def cadastra_produto(self, categoria: str, cor: str, tamanho: str, preco_venda: float, endereco_filial: str, quant_min: str, quantidade: str):
+        statement = f"INSERT INTO produto (categoria, cor, tamanho, precovenda, enderecofilial, quant_min, quantidade) VALUES ('{categoria}', '{cor}', '{tamanho}', {preco_venda}, '{endereco_filial}', '{quant_min}', '{quantidade}')"
         
         return self.db.execute_statement(statement)
 

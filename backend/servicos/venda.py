@@ -22,15 +22,15 @@ class VendaDatabase():
         
         return self.db.execute_select_all(query)
     
-    def cadastra_venda(self, id_venda: int, data_compra: str, status: str, valor_desconto: float, cpf_funcionario: str, cpf_cliente: str, comissao: float, forma_pag: str = None, parcelas: int = None):
+    def cadastra_venda(self, data_compra: str, status: str, valor_desconto: float, cpf_funcionario: str, cpf_cliente: str, comissao: float, forma_pag: str = None, parcelas: int = None):
         if forma_pag and parcelas is not None:
-            statement = f"INSERT INTO venda (idvenda, datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, forma_pag, parcelas) VALUES ({id_venda}, '{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, '{forma_pag}', {parcelas})"
+            statement = f"INSERT INTO venda (datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, forma_pag, parcelas) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, '{forma_pag}', {parcelas})"
         elif forma_pag:
-            statement = f"INSERT INTO venda (idvenda, datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, forma_pag) VALUES ({id_venda}, '{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, '{forma_pag}')"
+            statement = f"INSERT INTO venda (datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, forma_pag) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, '{forma_pag}')"
         elif parcelas is not None:
-            statement = f"INSERT INTO venda (idvenda, datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, parcelas) VALUES ({id_venda}, '{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, {parcelas})"
+            statement = f"INSERT INTO venda (datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, parcelas) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, {parcelas})"
         else:
-            statement = f"INSERT INTO venda (idvenda, datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao) VALUES ({id_venda}, '{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao})"
+            statement = f"INSERT INTO venda (datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao})"
         
         return self.db.execute_statement(statement)
 

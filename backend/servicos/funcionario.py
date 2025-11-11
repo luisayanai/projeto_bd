@@ -11,13 +11,13 @@ class FuncionarioDatabase():
     def get_funcionarios(self, cpf: str = None, endereco_filial: str = None):
         query = "SELECT * FROM funcionario"
         conditions = []
-        if cpf:
+        if cpf: # QUANDO CPF NAO EXISTE, ESTA PEGANDO TODOS???
             conditions.append(f"cpf = '{cpf}'")
         if endereco_filial:
-            conditions.append(f"enderecofilial = '{endereco_filial}'")
+            conditions.append(f"endereco_filial = '{endereco_filial}'")
         
         if conditions:
-            query += " WHERE " + " AND ".join(conditions)
+            query += " WHERE " + " AND ".join(conditions) # NAO SEI SE FUNCIONA....
         
         return self.db.execute_select_all(query)
 

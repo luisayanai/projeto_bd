@@ -24,7 +24,7 @@ class RelatoriosDatabase():
                 SUM(t.valor_liquido) AS faturamento_liquido
             FROM (
                 SELECT
-                    v.id_venda,
+                    v.idvenda,
                     v.data_compra,
                     f.endereco AS filial,
                     SUM(iv.quantidade * p.preco_venda) AS valor_bruto,
@@ -33,13 +33,13 @@ class RelatoriosDatabase():
                 FROM venda v
                 JOIN funcionario fun ON fun.cpf = v.cpf_funcionario
                 JOIN filial f ON f.endereco = fun.endereco_filial
-                JOIN item_venda iv ON iv.id_venda = v.id_venda
-                JOIN produto p ON p.id_produto = iv.id_produto
-                GROUP BY v.id_venda, v.data_compra, f.endereco, v.valor_desconto
+                JOIN item_venda iv ON iv.idvenda = v.idvenda
+                JOIN produto p ON p.idproduto = iv.idproduto
+                GROUP BY v.idvenda, v.data_compra, f.endereco, v.valor_desconto
             ) AS t
             WHERE EXTRACT(YEAR FROM t.data_compra) = EXTRACT(YEAR FROM CURRENT_DATE)
-            GROUP BY t.filial, ano, mes
-            ORDER BY ano, mes, t.filial;
+            GROUP BY t.filial, EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra)
+            ORDER BY EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra), t.filial;
             """
         elif mes is None:
             query = f"""
@@ -52,7 +52,7 @@ class RelatoriosDatabase():
                 SUM(t.valor_liquido) AS faturamento_liquido
             FROM (
                 SELECT
-                    v.id_venda,
+                    v.idvenda,
                     v.data_compra,
                     f.endereco AS filial,
                     SUM(iv.quantidade * p.preco_venda) AS valor_bruto,
@@ -61,13 +61,13 @@ class RelatoriosDatabase():
                 FROM venda v
                 JOIN funcionario fun ON fun.cpf = v.cpf_funcionario
                 JOIN filial f ON f.endereco = fun.endereco_filial
-                JOIN item_venda iv ON iv.id_venda = v.id_venda
-                JOIN produto p ON p.id_produto = iv.id_produto
-                GROUP BY v.id_venda, v.data_compra, f.endereco, v.valor_desconto
+                JOIN item_venda iv ON iv.idvenda = v.idvenda
+                JOIN produto p ON p.idproduto = iv.idproduto
+                GROUP BY v.idvenda, v.data_compra, f.endereco, v.valor_desconto
             ) AS t
             WHERE EXTRACT(YEAR FROM t.data_compra) = {ano}
-            GROUP BY t.filial, ano, mes
-            ORDER BY ano, mes, t.filial;
+            GROUP BY t.filial, EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra)
+            ORDER BY EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra), t.filial;
             """
         else:
             query = f"""
@@ -80,7 +80,7 @@ class RelatoriosDatabase():
                 SUM(t.valor_liquido) AS faturamento_liquido
             FROM (
                 SELECT
-                    v.id_venda,
+                    v.idvenda,
                     v.data_compra,
                     f.endereco AS filial,
                     SUM(iv.quantidade * p.preco_venda) AS valor_bruto,
@@ -89,13 +89,13 @@ class RelatoriosDatabase():
                 FROM venda v
                 JOIN funcionario fun ON fun.cpf = v.cpf_funcionario
                 JOIN filial f ON f.endereco = fun.endereco_filial
-                JOIN item_venda iv ON iv.id_venda = v.id_venda
-                JOIN produto p ON p.id_produto = iv.id_produto
-                GROUP BY v.id_venda, v.data_compra, f.endereco, v.valor_desconto
+                JOIN item_venda iv ON iv.idvenda = v.idvenda
+                JOIN produto p ON p.idproduto = iv.idproduto
+                GROUP BY v.idvenda, v.data_compra, f.endereco, v.valor_desconto
             ) AS t
             WHERE EXTRACT(YEAR FROM t.data_compra) = {ano} AND EXTRACT(MONTH FROM t.data_compra) = {mes}
-            GROUP BY t.filial, ano, mes
-            ORDER BY ano, mes, t.filial;
+            GROUP BY t.filial, EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra)
+            ORDER BY EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra), t.filial;
             """
         
         return self.db.execute_select_all(query)
@@ -112,13 +112,13 @@ class RelatoriosDatabase():
             SUM(t.valor_liquido) AS total_gasto
         FROM (
             SELECT
-                v.id_venda,
+                v.idvenda,
                 v.cpf_cliente,
                 SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
             FROM venda v
-            JOIN item_venda iv ON iv.id_venda = v.id_venda
-            JOIN produto p ON p.id_produto = iv.id_produto
-            GROUP BY v.id_venda, v.cpf_cliente, v.valor_desconto
+            JOIN item_venda iv ON iv.idvenda = v.idvenda
+            JOIN produto p ON p.idproduto = iv.idproduto
+            GROUP BY v.idvenda, v.cpf_cliente, v.valor_desconto
         ) AS t
         JOIN cliente c ON c.cpf = t.cpf_cliente
         GROUP BY c.cpf, c.nome
@@ -142,25 +142,25 @@ class RelatoriosDatabase():
         
         query = f"""
         SELECT
-            (cf.cpf_cliente IS NOT NULL) AS eh_fidelizado,
-            (cf.cpf_cliente IS NULL) AS nao_fidelizado,
-            COUNT(t.id_venda) AS quantidade_vendas,
+            (cf.cpfcliente IS NOT NULL) AS eh_fidelizado,
+            (cf.cpfcliente IS NULL) AS nao_fidelizado,
+            COUNT(t.idvenda) AS quantidade_vendas,
             SUM(t.valor_liquido) AS valor_total,
             AVG(t.valor_liquido) AS ticket_medio
         FROM (
             SELECT
-                v.id_venda,
+                v.idvenda,
                 v.cpf_cliente,
                 v.data_compra,
                 SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
             FROM venda v
-            JOIN item_venda iv ON iv.id_venda = v.id_venda
-            JOIN produto p ON p.id_produto = iv.id_produto
+            JOIN item_venda iv ON iv.idvenda = v.idvenda
+            JOIN produto p ON p.idproduto = iv.idproduto
             {where_clause}
-            GROUP BY v.id_venda, v.cpf_cliente, v.data_compra, v.valor_desconto
+            GROUP BY v.idvenda, v.cpf_cliente, v.data_compra, v.valor_desconto
         ) AS t
         JOIN cliente c ON c.cpf = t.cpf_cliente
-        LEFT JOIN cliente_fidelizado cf ON cf.cpf_cliente = c.cpf
+        LEFT JOIN cliente_fidelizado cf ON cf.cpfcliente = c.cpf
         GROUP BY eh_fidelizado, nao_fidelizado;
         """
         return self.db.execute_select_all(query)
@@ -175,18 +175,18 @@ class RelatoriosDatabase():
         SELECT
             f.cpf,
             f.nome,
-            COUNT(t.id_venda) AS quantidade_vendas,
+            COUNT(t.idvenda) AS quantidade_vendas,
             SUM(t.valor_liquido) AS valor_total_vendido
         FROM (
             SELECT
-                v.id_venda,
+                v.idvenda,
                 v.cpf_funcionario,
                 v.data_compra,
                 SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
             FROM venda v
-            JOIN item_venda iv ON iv.id_venda = v.id_venda
-            JOIN produto p ON p.id_produto = iv.id_produto
-            GROUP BY v.id_venda, v.cpf_funcionario, v.data_compra, v.valor_desconto
+            JOIN item_venda iv ON iv.idvenda = v.idvenda
+            JOIN produto p ON p.idproduto = iv.idproduto
+            GROUP BY v.idvenda, v.cpf_funcionario, v.data_compra, v.valor_desconto
         ) AS t
         JOIN funcionario f ON f.cpf = t.cpf_funcionario
         WHERE t.data_compra >= CURRENT_DATE - INTERVAL '{meses} month'
@@ -203,14 +203,14 @@ class RelatoriosDatabase():
         """
         query = f"""
         SELECT
-            p.id_produto,
+            p.idproduto,
             p.categoria,
             p.cor,
             p.tamanho,
             SUM(iv.quantidade) AS quantidade_vendida
         FROM produto p
-        JOIN item_venda iv ON iv.id_produto = p.id_produto
-        GROUP BY p.id_produto, p.categoria, p.cor, p.tamanho
+        JOIN item_venda iv ON iv.idproduto = p.idproduto
+        GROUP BY p.idproduto, p.categoria, p.cor, p.tamanho
         HAVING SUM(iv.quantidade) > {quantidade_minima}
         ORDER BY quantidade_vendida DESC;
         """
@@ -223,17 +223,17 @@ class RelatoriosDatabase():
         """
         query = f"""
         SELECT
-            p.id_produto,
+            p.idproduto,
             p.categoria,
             p.cor,
             p.tamanho,
             SUM(iv.quantidade) AS quantidade_vendida,
-            COUNT(d.id_devolucao) AS quantidade_devolvida,
-            (COUNT(d.id_devolucao) * 100.0 / NULLIF(SUM(iv.quantidade), 0)) AS percentual_devolucao
+            COUNT(d.iddevolucao) AS quantidade_devolvida,
+            (COUNT(d.iddevolucao) * 100.0 / NULLIF(SUM(iv.quantidade), 0)) AS percentual_devolucao
         FROM produto p
-        JOIN item_venda iv ON iv.id_produto = p.id_produto
-        LEFT JOIN devolucao d ON d.id_produto = p.id_produto
-        GROUP BY p.id_produto, p.categoria, p.cor, p.tamanho
+        JOIN item_venda iv ON iv.idproduto = p.idproduto
+        LEFT JOIN devolucao d ON d.idproduto = p.idproduto
+        GROUP BY p.idproduto, p.categoria, p.cor, p.tamanho
         HAVING SUM(iv.quantidade) > 0
         ORDER BY percentual_devolucao DESC
         LIMIT {limite};
@@ -250,7 +250,7 @@ class RelatoriosDatabase():
             query = f"""
             SELECT
                 f.endereco AS filial,
-                p.id_produto,
+                p.idproduto,
                 p.categoria,
                 p.cor,
                 p.tamanho,
@@ -259,13 +259,13 @@ class RelatoriosDatabase():
             FROM produto p
             JOIN filial f ON f.endereco = p.endereco_filial
             WHERE p.quantidade < p.quant_min AND f.endereco = '{endereco_filial}'
-            ORDER BY filial, p.categoria, p.id_produto;
+            ORDER BY filial, p.categoria, p.idproduto;
             """
         else:
             query = """
             SELECT
                 f.endereco AS filial,
-                p.id_produto,
+                p.idproduto,
                 p.categoria,
                 p.cor,
                 p.tamanho,
@@ -274,7 +274,7 @@ class RelatoriosDatabase():
             FROM produto p
             JOIN filial f ON f.endereco = p.endereco_filial
             WHERE p.quantidade < p.quant_min
-            ORDER BY filial, p.categoria, p.id_produto;
+            ORDER BY filial, p.categoria, p.idproduto;
             """
         return self.db.execute_select_all(query)
 
@@ -291,7 +291,7 @@ class RelatoriosDatabase():
             SUM(ped.quantidade * p.preco_venda) AS valor_estimado
         FROM pedido ped
         JOIN fornecedor f ON f.cnpj = ped.cnpj_fornec
-        JOIN produto p ON p.id_produto = ped.id_produto
+        JOIN produto p ON p.idproduto = ped.idproduto
         GROUP BY f.cnpj, f.nome
         ORDER BY valor_estimado DESC
         LIMIT {limite};
@@ -314,13 +314,13 @@ class RelatoriosDatabase():
         query = f"""
         SELECT
             v.forma_pag,
-            COUNT(DISTINCT v.id_venda) AS quantidade_vendas,
+            COUNT(DISTINCT v.idvenda) AS quantidade_vendas,
             SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS valor_total,
             (SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto)) 
-                / NULLIF(COUNT(DISTINCT v.id_venda), 0) AS ticket_medio
+                / NULLIF(COUNT(DISTINCT v.idvenda), 0) AS ticket_medio
         FROM venda v
-        JOIN item_venda iv ON iv.id_venda = v.id_venda
-        JOIN produto p ON p.id_produto = iv.id_produto
+        JOIN item_venda iv ON iv.idvenda = v.idvenda
+        JOIN produto p ON p.idproduto = iv.idproduto
         {where_clause}
         GROUP BY v.forma_pag
         ORDER BY valor_total DESC;
@@ -339,20 +339,20 @@ class RelatoriosDatabase():
         SELECT
             c.cpf,
             c.nome,
-            (cf.cpf_cliente IS NOT NULL) AS eh_fidelizado,
-            (cf.cpf_cliente IS NULL) AS nao_fidelizado,
+            (cf.cpfcliente IS NOT NULL) AS eh_fidelizado,
+            (cf.cpfcliente IS NULL) AS nao_fidelizado,
             gc.total_gasto
         FROM (
             SELECT
                 v.cpf_cliente,
                 SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS total_gasto
             FROM venda v
-            JOIN item_venda iv ON iv.id_venda = v.id_venda
-            JOIN produto p ON p.id_produto = iv.id_produto
+            JOIN item_venda iv ON iv.idvenda = v.idvenda
+            JOIN produto p ON p.idproduto = iv.idproduto
             GROUP BY v.cpf_cliente
         ) AS gc
         JOIN cliente c ON c.cpf = gc.cpf_cliente
-        LEFT JOIN cliente_fidelizado cf ON cf.cpf_cliente = c.cpf
+        LEFT JOIN cliente_fidelizado cf ON cf.cpfcliente = c.cpf
         WHERE gc.total_gasto >
             (SELECT AVG(total_gasto)
              FROM (
@@ -360,8 +360,8 @@ class RelatoriosDatabase():
                      v.cpf_cliente,
                      SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS total_gasto
                  FROM venda v
-                 JOIN item_venda iv ON iv.id_venda = v.id_venda
-                 JOIN produto p ON p.id_produto = iv.id_produto
+                 JOIN item_venda iv ON iv.idvenda = v.idvenda
+                 JOIN produto p ON p.idproduto = iv.idproduto
                  GROUP BY v.cpf_cliente
              ) AS medias)
         ORDER BY gc.total_gasto DESC

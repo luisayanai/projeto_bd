@@ -30,18 +30,26 @@ class DatabaseManager:
     # funcao para executar selects. Qualquer tipo de select e mandado para aqui e, entao, retorna lista (cada item e equivalente a um registro (linha retornada pelo SELECT))
     def execute_select_all(self, query: str) -> list[dict[str, Any]]:
         "Usado para SELECTS no geral"
-        self.cursor.execute(query)
-        return [dict(item) for item in self.cursor.fetchall()]
+        try:
+            self.cursor.execute(query)
+            return [dict(item) for item in self.cursor.fetchall()]
+        except Exception as e:
+            self.conn.rollback()
+            raise e
 
     # Para querries que executam uma vez so
     def execute_select_one(self, query: str) -> dict | None:
         "Usado para SELECT com apenas uma linha de resposta"
-        self.cursor.execute(query)
-        query_result = self.cursor.fetchone()
+        try:
+            self.cursor.execute(query)
+            query_result = self.cursor.fetchone()
 
-        if not query_result:
-            return None
+            if not query_result:
+                return None
 
-        return dict(query_result)
+            return dict(query_result)
+        except Exception as e:
+            self.conn.rollback()
+            raise e
     
     

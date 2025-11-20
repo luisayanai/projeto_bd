@@ -19,13 +19,14 @@ def get_devolucoes():
 def post_devolucao():
     json = request.get_json()
     id_venda = json.get("id_venda")
+    id_produto = json.get("id_produto")
     credito = json.get("credito")
     cpf_cliente = json.get("cpf_cliente")
 
-    if not id_venda or credito is None or not cpf_cliente:
-        return jsonify("ID da venda, crédito e CPF do cliente são obrigatórios"), 400
+    if not id_venda or not id_produto or credito is None or not cpf_cliente:
+        return jsonify("ID da venda, ID do produto, crédito e CPF do cliente são obrigatórios"), 400
 
-    result = DevolucaoDatabase().cadastra_devolucao(id_venda, credito, cpf_cliente)
+    result = DevolucaoDatabase().cadastra_devolucao(id_venda, id_produto, credito, cpf_cliente)
     if result:
         return jsonify("Devolução cadastrada"), 200
     return jsonify("Erro ao cadastrar devolução"), 400

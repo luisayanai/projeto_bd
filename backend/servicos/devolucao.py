@@ -23,8 +23,8 @@ class DevolucaoDatabase():
         return self.db.execute_select_all(query)
 
     
-    def cadastra_devolucao(self, id_venda: int, credito: float, cpf_cliente: str):
-        statement = f"INSERT INTO devolucao (id_venda, credito, cpf_cliente) VALUES ({id_venda}, {credito}, '{cpf_cliente}')"
+    def cadastra_devolucao(self, id_venda: int, id_produto: int, credito: float, cpf_cliente: str):
+        statement = f"INSERT INTO devolucao (id_venda, id_produto, credito, cpf_cliente) VALUES ({id_venda}, {id_produto}, {credito}, '{cpf_cliente}')"
         
         return self.db.execute_statement(statement)
 

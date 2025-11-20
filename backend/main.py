@@ -14,6 +14,7 @@ from rotas.devolucao import devolucao_blueprint
 from rotas.cliente_fidelizado import cliente_fidelizado_blueprint
 from rotas.item_venda import item_venda_blueprint
 from rotas.pedido import pedido_blueprint
+from rotas.relatorios import relatorios_blueprint
 
 # App
 app = Flask(__name__)
@@ -35,5 +36,6 @@ app.register_blueprint(devolucao_blueprint)
 app.register_blueprint(cliente_fidelizado_blueprint)
 app.register_blueprint(item_venda_blueprint)
 app.register_blueprint(pedido_blueprint)
+app.register_blueprint(relatorios_blueprint)
 
 app.run("0.0.0.0", port=8000, debug=False)

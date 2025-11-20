@@ -1,0 +1,199 @@
+1) Faturamento mensal por filial no ano atual: para cada filial e para cada mês do ano atual, mostra o faturamento bruto, o total de descontos aplicados e o faturamento líquido, considerando todas as vendas realizadas e seus produtos associados.
+
+SELECT
+    t.filial,
+    EXTRACT(YEAR FROM t.data_compra)  AS ano,
+    EXTRACT(MONTH FROM t.data_compra) AS mes,
+    SUM(t.valor_bruto)    AS faturamento_bruto,
+    SUM(t.desconto)       AS descontos_totais,
+    SUM(t.valor_liquido)  AS faturamento_liquido
+FROM (
+    SELECT
+        v.idvenda,
+        v.data_compra,
+        f.endereco AS filial,
+        SUM(iv.quantidade * p.preco_venda) AS valor_bruto,
+        v.valor_desconto AS desconto,
+        SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
+    FROM VENDA v
+    JOIN FUNCIONARIO fun ON fun.cpf = v.cpf_funcionario
+    JOIN FILIAL f ON f.endereco = fun.endereco_filial
+    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+    JOIN PRODUTO p ON p.idproduto = iv.idproduto
+    GROUP BY v.idvenda, v.data_compra, f.endereco, v.valor_desconto
+) AS t
+WHERE EXTRACT(YEAR FROM t.data_compra) = EXTRACT(YEAR FROM CURRENT_DATE)
+GROUP BY t.filial, ano, mes
+ORDER BY ano, mes, t.filial;
+
+2) Top 10 clientes que mais gastaram: lista os dez clientes que mais gastaram na loja, considerando todas as vendas e produtos adquiridos, já descontando os descontos aplicados.
+
+SELECT
+    c.cpf,
+    c.nome,
+    SUM(t.valor_liquido) AS total_gasto
+FROM (
+    SELECT
+        v.idvenda,
+        v.cpf_cliente,
+        SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
+    FROM VENDA v
+    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+    JOIN PRODUTO p ON p.idproduto = iv.idproduto
+    GROUP BY v.idvenda, v.cpf_cliente, v.valor_desconto
+) AS t
+JOIN CLIENTE c ON c.cpf = t.cpf_cliente
+GROUP BY c.cpf, c.nome
+ORDER BY total_gasto DESC
+LIMIT 10;
+
+3) Valor médio gasto por clientes fidelizados e não fidelizados: compara o ticket médio entre clientes fidelizados e não fidelizados, considerando todas as compras realizadas.
+
+SELECT
+    (cf.cpfcliente IS NOT NULL) AS EhFidelizado,
+    (cf.cpfcliente IS NULL)     AS NaoFidelizado,
+    COUNT(t.idvenda)            AS quantidade_vendas,
+    SUM(t.valor_liquido)        AS valor_total,
+    AVG(t.valor_liquido)        AS ticket_medio
+FROM (
+    SELECT
+        v.idvenda,
+        v.cpf_cliente,
+        SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
+    FROM VENDA v
+    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+    JOIN PRODUTO p ON p.idproduto = iv.idproduto
+    GROUP BY v.idvenda, v.cpf_cliente, v.valor_desconto
+) AS t
+JOIN CLIENTE c ON c.cpf = t.cpf_cliente
+LEFT JOIN CLIENTE_FIDELIZADO cf ON cf.cpfcliente = c.cpf
+GROUP BY EhFidelizado, NaoFidelizado;
+
+4) Ranking de funcionários por vendas no último mês: funcionários com maior valor vendido no último mês, mostrando apenas quem vendeu mais de 5.000 reais.
+
+SELECT
+    f.cpf,
+    f.nome,
+    COUNT(t.idvenda)      AS quantidade_vendas,
+    SUM(t.valor_liquido)  AS valor_total_vendido
+FROM (
+    SELECT
+        v.idvenda,
+        v.cpf_funcionario,
+        v.data_compra,
+        SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
+    FROM VENDA v
+    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+    JOIN PRODUTO p ON p.idproduto = iv.idproduto
+    GROUP BY v.idvenda, v.cpf_funcionario, v.data_compra, v.valor_desconto
+) AS t
+JOIN FUNCIONARIO f ON f.cpf = t.cpf_funcionario
+WHERE t.data_compra >= CURRENT_DATE - INTERVAL '1 month'
+GROUP BY f.cpf, f.nome
+HAVING SUM(t.valor_liquido) > 5000
+ORDER BY valor_total_vendido DESC;
+
+5) Produtos mais vendidos (acima de 50 unidades): produtos com mais de 50 unidades vendidas no total.
+
+SELECT
+    p.idproduto,
+    p.categoria,
+    p.cor,
+    p.tamanho,
+    SUM(iv.quantidade) AS quantidade_vendida
+FROM PRODUTO p
+JOIN ITEM_VENDA iv ON iv.idproduto = p.idproduto
+GROUP BY p.idproduto, p.categoria, p.cor, p.tamanho
+HAVING SUM(iv.quantidade) > 50
+ORDER BY quantidade_vendida DESC;
+
+6) Produtos com maior índice de devolução: compara a quantidade total vendida com a quantidade devolvida, mostrando o percentual de devolução.
+
+SELECT
+    p.idproduto,
+    p.categoria,
+    p.cor,
+    p.tamanho,
+    SUM(iv.quantidade) AS quantidade_vendida,
+    COUNT(d.iddevolucao) AS quantidade_devolvida,
+    (COUNT(d.iddevolucao) * 100.0 / SUM(iv.quantidade)) AS percentual_devolucao
+FROM PRODUTO p
+JOIN ITEM_VENDA iv ON iv.idproduto = p.idproduto
+LEFT JOIN DEVOLUCAO d ON d.idproduto = p.idproduto
+GROUP BY p.idproduto, p.categoria, p.cor, p.tamanho
+HAVING SUM(iv.quantidade) > 0
+ORDER BY percentual_devolucao DESC;
+
+7) Produtos com estoque abaixo do mínimo por filial: produtos cujo estoque atual está abaixo da quantidade mínima, por filial.
+
+SELECT
+    f.endereco AS filial,
+    p.idproduto,
+    p.categoria,
+    p.cor,
+    p.tamanho,
+    p.quantidade AS quantidade_atual,
+    p.quant_min AS quantidade_minima
+FROM PRODUTO p
+JOIN FILIAL f ON f.endereco = p.endereco_filial
+WHERE p.quantidade < p.quant_min
+ORDER BY filial, p.categoria, p.idproduto;
+
+8) Fornecedores com maior volume e valor de pedidos: fornecedores com maior quantidade total de unidades pedidas, calculando o valor estimado com base no preço de venda do produto.
+
+SELECT
+    f.cnpj,
+    f.nome,
+    SUM(ped.quantidade) AS quantidade_total_pedida,
+    SUM(ped.quantidade * p.preco_venda) AS valor_estimado
+FROM PEDIDO ped
+JOIN FORNECEDOR f ON f.cnpj = ped.cnpj_fornec
+JOIN PRODUTO p ON p.idproduto = ped.idproduto
+GROUP BY f.cnpj, f.nome
+ORDER BY valor_estimado DESC;
+
+9) Distribuição das vendas por forma de pagamento: para cada forma de pagamento o número de vendas realizadas, o valor total vendido e o valor médio.
+
+SELECT
+    v.forma_pag,
+    COUNT(DISTINCT v.idvenda) AS quantidade_vendas,
+    SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS valor_total,
+    (SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto)) 
+        / COUNT(DISTINCT v.idvenda) AS ticket_medio
+FROM VENDA v
+JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+JOIN PRODUTO p ON p.idproduto = iv.idproduto
+GROUP BY v.forma_pag
+ORDER BY valor_total DESC;
+
+10) Clientes com gasto acima da média dos clientes (também informa se são fidelizados)
+
+SELECT
+    c.cpf,
+    c.nome,
+    (cf.cpfcliente IS NOT NULL) AS EhFidelizado,
+    (cf.cpfcliente IS NULL)     AS NaoFidelizado,
+    gc.total_gasto
+FROM (
+    SELECT
+        v.cpf_cliente,
+        SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS total_gasto
+    FROM VENDA v
+    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+    JOIN PRODUTO p ON p.idproduto = iv.idproduto
+    GROUP BY v.cpf_cliente
+) AS gc
+JOIN CLIENTE c ON c.cpf = gc.cpf_cliente
+LEFT JOIN CLIENTE_FIDELIZADO cf ON cf.cpfcliente = c.cpf
+WHERE gc.total_gasto >
+    (SELECT AVG(total_gasto)
+     FROM (
+         SELECT
+             v.cpf_cliente,
+             SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS total_gasto
+         FROM VENDA v
+         JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+         JOIN PRODUTO p ON p.idproduto = iv.idproduto
+         GROUP BY v.cpf_cliente
+     ) AS medias)
+ORDER BY gc.total_gasto DESC;

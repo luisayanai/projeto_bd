@@ -11,11 +11,11 @@ class DevolucaoDatabase():
         query = "SELECT * FROM devolucao"
         conditions = []
         if id_devolucao:
-            conditions.append(f"iddevolucao = {id_devolucao}")
+            conditions.append(f"id_devolucao = {id_devolucao}")
         if id_venda:
-            conditions.append(f"idvenda = {id_venda}")
+            conditions.append(f"id_venda = {id_venda}")
         if cpf_cliente:
-            conditions.append(f"cpfcliente = '{cpf_cliente}'")
+            conditions.append(f"cpf_cliente = '{cpf_cliente}'")
         
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -24,11 +24,11 @@ class DevolucaoDatabase():
 
     
     def cadastra_devolucao(self, id_venda: int, credito: float, cpf_cliente: str):
-        statement = f"INSERT INTO devolucao (idvenda, credito, cpfcliente) VALUES ({id_venda}, {credito}, '{cpf_cliente}')"
+        statement = f"INSERT INTO devolucao (id_venda, credito, cpf_cliente) VALUES ({id_venda}, {credito}, '{cpf_cliente}')"
         
         return self.db.execute_statement(statement)
 
     def deleta_devolucao(self, id_devolucao: int):
-        statement = f"DELETE FROM devolucao WHERE iddevolucao = {id_devolucao}"
+        statement = f"DELETE FROM devolucao WHERE id_devolucao = {id_devolucao}"
         return self.db.execute_statement(statement)
 

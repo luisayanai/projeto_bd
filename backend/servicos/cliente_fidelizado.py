@@ -11,9 +11,9 @@ class ClienteFidelizadoDatabase():
         query = "SELECT * FROM cliente_fidelizado"
         conditions = []
         if id_cadastro:
-            conditions.append(f"idcadastro = {id_cadastro}")
+            conditions.append(f"id_cadastro = {id_cadastro}")
         if cpf_cliente:
-            conditions.append(f"cpfcliente = '{cpf_cliente}'")
+            conditions.append(f"cpf_cliente = '{cpf_cliente}'")
         
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -21,18 +21,18 @@ class ClienteFidelizadoDatabase():
         return self.db.execute_select_all(query)
 
     def get_cliente_fidelizado_by_id(self, id_cadastro: int):
-        query = f"SELECT * FROM cliente_fidelizado WHERE idcadastro = {id_cadastro}"
+        query = f"SELECT * FROM cliente_fidelizado WHERE id_cadastro = {id_cadastro}"
         return self.db.execute_select_one(query)
     
     def cadastra_cliente_fidelizado(self, cpf_cliente: str, ponto: str = None, email: str = None):
         if ponto and email:
-            statement = f"INSERT INTO cliente_fidelizado (ponto, email, cpfcliente) VALUES ('{ponto}', '{email}', '{cpf_cliente}')"
+            statement = f"INSERT INTO cliente_fidelizado (ponto, email, cpf_cliente) VALUES ('{ponto}', '{email}', '{cpf_cliente}')"
         elif ponto:
-            statement = f"INSERT INTO cliente_fidelizado (ponto, cpfcliente) VALUES ('{ponto}', '{cpf_cliente}')"
+            statement = f"INSERT INTO cliente_fidelizado (ponto, cpf_cliente) VALUES ('{ponto}', '{cpf_cliente}')"
         elif email:
-            statement = f"INSERT INTO cliente_fidelizado (email, cpfcliente) VALUES ('{email}', '{cpf_cliente}')"
+            statement = f"INSERT INTO cliente_fidelizado (email, cpf_cliente) VALUES ('{email}', '{cpf_cliente}')"
         else:
-            statement = f"INSERT INTO cliente_fidelizado (cpfcliente) VALUES ('{cpf_cliente}')"
+            statement = f"INSERT INTO cliente_fidelizado (cpf_cliente) VALUES ('{cpf_cliente}')"
         
         return self.db.execute_statement(statement)
 
@@ -43,15 +43,15 @@ class ClienteFidelizadoDatabase():
         if email:
             updates.append(f"email = '{email}'")
         if cpf_cliente:
-            updates.append(f"cpfcliente = '{cpf_cliente}'")
+            updates.append(f"cpf_cliente = '{cpf_cliente}'")
         
         if not updates:
             return False
         
-        statement = f"UPDATE cliente_fidelizado SET {', '.join(updates)} WHERE idcadastro = {id_cadastro}"
+        statement = f"UPDATE cliente_fidelizado SET {', '.join(updates)} WHERE id_cadastro = {id_cadastro}"
         return self.db.execute_statement(statement)
 
     def deleta_cliente_fidelizado(self, id_cadastro: int):
-        statement = f"DELETE FROM cliente_fidelizado WHERE idcadastro = {id_cadastro}"
+        statement = f"DELETE FROM cliente_fidelizado WHERE id_cadastro = {id_cadastro}"
         return self.db.execute_statement(statement)
 

@@ -11,11 +11,11 @@ class VendaDatabase():
         query = "SELECT * FROM venda"
         conditions = []
         if id_venda:
-            conditions.append(f"idvenda = {id_venda}")
+            conditions.append(f"id_venda = {id_venda}")
         if cpf_funcionario:
-            conditions.append(f"cpffuncionario = '{cpf_funcionario}'")
+            conditions.append(f"cpf_funcionario = '{cpf_funcionario}'")
         if cpf_cliente:
-            conditions.append(f"cpfcliente = '{cpf_cliente}'")
+            conditions.append(f"cpf_cliente = '{cpf_cliente}'")
         
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -24,28 +24,28 @@ class VendaDatabase():
     
     def cadastra_venda(self, data_compra: str, status: str, valor_desconto: float, cpf_funcionario: str, cpf_cliente: str, comissao: float, forma_pag: str = None, parcelas: int = None):
         if forma_pag and parcelas is not None:
-            statement = f"INSERT INTO venda (datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, forma_pag, parcelas) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, '{forma_pag}', {parcelas})"
+            statement = f"INSERT INTO venda (data_compra, status, valor_desconto, cpf_funcionario, cpf_cliente, comissao, forma_pag, parcelas) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, '{forma_pag}', {parcelas})"
         elif forma_pag:
-            statement = f"INSERT INTO venda (datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, forma_pag) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, '{forma_pag}')"
+            statement = f"INSERT INTO venda (data_compra, status, valor_desconto, cpf_funcionario, cpf_cliente, comissao, forma_pag) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, '{forma_pag}')"
         elif parcelas is not None:
-            statement = f"INSERT INTO venda (datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao, parcelas) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, {parcelas})"
+            statement = f"INSERT INTO venda (data_compra, status, valor_desconto, cpf_funcionario, cpf_cliente, comissao, parcelas) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao}, {parcelas})"
         else:
-            statement = f"INSERT INTO venda (datacompra, status, valordesconto, cpffuncionario, cpfcliente, comissao) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao})"
+            statement = f"INSERT INTO venda (data_compra, status, valor_desconto, cpf_funcionario, cpf_cliente, comissao) VALUES ('{data_compra}', '{status}', {valor_desconto}, '{cpf_funcionario}', '{cpf_cliente}', {comissao})"
         
         return self.db.execute_statement(statement)
 
     def atualiza_venda(self, id_venda: int, data_compra: str = None, status: str = None, valor_desconto: float = None, cpf_funcionario: str = None, cpf_cliente: str = None, comissao: float = None, forma_pag: str = None, parcelas: int = None):
         updates = []
         if data_compra:
-            updates.append(f"datacompra = '{data_compra}'")
+            updates.append(f"data_compra = '{data_compra}'")
         if status:
             updates.append(f"status = '{status}'")
         if valor_desconto is not None:
-            updates.append(f"valordesconto = {valor_desconto}")
+            updates.append(f"valor_desconto = {valor_desconto}")
         if cpf_funcionario:
-            updates.append(f"cpffuncionario = '{cpf_funcionario}'")
+            updates.append(f"cpf_funcionario = '{cpf_funcionario}'")
         if cpf_cliente:
-            updates.append(f"cpfcliente = '{cpf_cliente}'")
+            updates.append(f"cpf_cliente = '{cpf_cliente}'")
         if comissao is not None:
             updates.append(f"comissao = {comissao}")
         if forma_pag:
@@ -56,10 +56,10 @@ class VendaDatabase():
         if not updates:
             return False
         
-        statement = f"UPDATE venda SET {', '.join(updates)} WHERE idvenda = {id_venda}"
+        statement = f"UPDATE venda SET {', '.join(updates)} WHERE id_venda = {id_venda}"
         return self.db.execute_statement(statement)
 
     def deleta_venda(self, id_venda: int):
-        statement = f"DELETE FROM venda WHERE idvenda = {id_venda}"
+        statement = f"DELETE FROM venda WHERE id_venda = {id_venda}"
         return self.db.execute_statement(statement)
 

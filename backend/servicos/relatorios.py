@@ -6,12 +6,12 @@ class RelatoriosDatabase():
     def __init__(self, db_provider = DatabaseManager()) -> None:
         self.db = db_provider
 
-    # Query 1: Faturamento mensal por filial
+    # query 1
     def faturamento_mensal_filial(self, ano: int = None, mes: int = None):
         """
-        Retorna o faturamento mensal por filial.
-        Se ano não for fornecido, usa o ano atual.
-        Se mes não for fornecido, retorna todos os meses do ano.
+        Retorna o faturamento mensal por filial
+            se ano não for fornecido, usa o ano atual
+            se mes não for fornecido, retorna todos os meses do ano
         """
         if ano is None:
             query = """
@@ -100,10 +100,10 @@ class RelatoriosDatabase():
         
         return self.db.execute_select_all(query)
 
-    # Query 2: Top N clientes que mais gastaram
+    # query 2
     def top_clientes_mais_gastaram(self, limite: int = 10):
         """
-        Retorna os N clientes que mais gastaram na loja.
+        Retorna os N clientes que mais gastaram na loja
         """
         query = f"""
         SELECT
@@ -127,12 +127,12 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 
-    # Query 3: Valor médio gasto por clientes fidelizados e não fidelizados
+    # query 3
     def ticket_medio_fidelizado(self, ano: int = None, mes: int = None):
         """
-        Compara o ticket médio entre clientes fidelizados e não fidelizados.
-        Se ano não for fornecido, usa todos os dados.
-        Se mes não for fornecido, usa todos os meses do ano.
+        Compara o ticket médio entre clientes fidelizados e não fidelizados
+            se ano não for fornecido, usa todos os dados
+            se mes não for fornecido, usa todos os meses do ano
         """
         where_clause = ""
         if ano is not None and mes is not None:
@@ -165,11 +165,10 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 
-    # Query 4: Ranking de funcionários por vendas
+    # query 4
     def ranking_funcionarios_vendas(self, meses: int = 1, valor_minimo: float = 5000.0):
         """
-        Retorna funcionários com maior valor vendido nos últimos N meses.
-        Mostra apenas quem vendeu mais que valor_minimo.
+        Retorna funcionários com maior valor vendido nos últimos N meses (ostra apenas quem vendeu mais que valor_minimo)
         """
         query = f"""
         SELECT
@@ -196,10 +195,10 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 
-    # Query 5: Produtos mais vendidos
+    # query 5
     def produtos_mais_vendidos(self, quantidade_minima: int = 50):
         """
-        Retorna produtos com mais de quantidade_minima unidades vendidas.
+        Retorna produtos com mais de quantidade_minima unidades vendidas
         """
         query = f"""
         SELECT
@@ -216,10 +215,10 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 
-    # Query 6: Produtos com maior índice de devolução
+    # query 6
     def produtos_maior_indice_devolucao(self, limite: int = 10):
         """
-        Retorna os N produtos com maior percentual de devolução.
+        Retorna os N produtos com maior percentual de devolução
         """
         query = f"""
         SELECT
@@ -240,11 +239,11 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 
-    # Query 7: Produtos com estoque abaixo do mínimo por filial
+    # query 7
     def produtos_estoque_abaixo_minimo(self, endereco_filial: str = None):
         """
-        Retorna produtos cujo estoque está abaixo do mínimo.
-        Se endereco_filial for fornecido, filtra por filial específica.
+        Retorna produtos cujo estoque está abaixo do mínimo
+            se endereco_filial foi dado, filtra por filial específica
         """
         if endereco_filial:
             query = f"""
@@ -278,10 +277,10 @@ class RelatoriosDatabase():
             """
         return self.db.execute_select_all(query)
 
-    # Query 8: Fornecedores com maior volume e valor de pedidos
+    # query 8
     def fornecedores_maior_volume_pedidos(self, limite: int = 10):
         """
-        Retorna os N fornecedores com maior quantidade e valor de pedidos.
+        Retorna os N fornecedores com maior quantidade e valor de pedidos
         """
         query = f"""
         SELECT
@@ -298,12 +297,12 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 
-    # Query 9: Distribuição das vendas por forma de pagamento
+    # query 9
     def distribuicao_vendas_forma_pagamento(self, ano: int = None, mes: int = None):
         """
-        Retorna distribuição das vendas por forma de pagamento.
-        Se ano não for fornecido, usa todos os dados.
-        Se mes não for fornecido, usa todos os meses do ano.
+        Retorna distribuição das vendas por forma de pagamento
+            se ano não for fornecido, usa todos os dados
+            se mes não for fornecido, usa todos os meses do ano
         """
         where_clause = "WHERE v.forma_pag IS NOT NULL"
         if ano is not None and mes is not None:
@@ -327,11 +326,11 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 
-    # Query 10: Clientes com gasto acima da média
+    # query 10
     def clientes_gasto_acima_media(self, limite: int = None):
         """
-        Retorna os N clientes que gastaram acima da média, informando se são fidelizados.
-        Se limite não for fornecido, retorna todos.
+        Retorna os N clientes que gastaram acima da média, informando se são fidelizados
+            se limite não for fornecido, retorna todos
         """
         limit_clause = f"LIMIT {limite}" if limite is not None else ""
         

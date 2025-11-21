@@ -7,7 +7,7 @@ relatorios_blueprint = Blueprint("relatorios", __name__)
 
 @relatorios_blueprint.route("/relatorios/faturamento-mensal-filial", methods=["GET"])
 def get_faturamento_mensal_filial():
-    # Query 1: Faturamento mensal por filial
+    # query 1: faturamento mensal por filial
    
     ano = request.args.get("ano", type=int)
     mes = request.args.get("mes", type=int)
@@ -17,7 +17,7 @@ def get_faturamento_mensal_filial():
 
 @relatorios_blueprint.route("/relatorios/top-clientes-mais-gastaram", methods=["GET"])
 def get_top_clientes_mais_gastaram():
-    # Query 2: Top N clientes que mais gastaram
+    # query 2: top N clientes que mais gastaram
     limite = request.args.get("limite", default=10, type=int)
     result = RelatoriosDatabase().top_clientes_mais_gastaram(limite)
 
@@ -25,7 +25,7 @@ def get_top_clientes_mais_gastaram():
 
 @relatorios_blueprint.route("/relatorios/ticket-medio-fidelizado", methods=["GET"])
 def get_ticket_medio_fidelizado():
-    # Query 3: Valor médio gasto por clientes fidelizados e não fidelizados
+    # query 3: valor médio gasto por clientes fidelizados e não fidelizados
     ano = request.args.get("ano", type=int)
     mes = request.args.get("mes", type=int)
 
@@ -34,7 +34,7 @@ def get_ticket_medio_fidelizado():
 
 @relatorios_blueprint.route("/relatorios/ranking-funcionarios-vendas", methods=["GET"])
 def get_ranking_funcionarios_vendas():
-    # Query 4: Ranking de funcionários por vendas
+    # query 4: ranking de funcionários por vendas
     meses = request.args.get("meses", default=1, type=int)
     valor_minimo = request.args.get("valor_minimo", default=5000.0, type=float)
     result = RelatoriosDatabase().ranking_funcionarios_vendas(meses, valor_minimo)
@@ -43,7 +43,7 @@ def get_ranking_funcionarios_vendas():
 
 @relatorios_blueprint.route("/relatorios/produtos-mais-vendidos", methods=["GET"])
 def get_produtos_mais_vendidos():
-    # Query 5: Produtos mais vendidos
+    # query 5: produtos mais vendidos
     quantidade_minima = request.args.get("quantidade_minima", default=50, type=int)
 
     result = RelatoriosDatabase().produtos_mais_vendidos(quantidade_minima)
@@ -51,7 +51,7 @@ def get_produtos_mais_vendidos():
 
 @relatorios_blueprint.route("/relatorios/produtos-maior-indice-devolucao", methods=["GET"])
 def get_produtos_maior_indice_devolucao():
-    # Query 6: Produtos com maior índice de devolução
+    # query 6: produtos com maior índice de devolução
     limite = request.args.get("limite", default=10, type=int)
 
     result = RelatoriosDatabase().produtos_maior_indice_devolucao(limite)
@@ -59,7 +59,7 @@ def get_produtos_maior_indice_devolucao():
 
 @relatorios_blueprint.route("/relatorios/produtos-estoque-abaixo-minimo", methods=["GET"])
 def get_produtos_estoque_abaixo_minimo():
-    # Query 7: Produtos com estoque abaixo do mínimo por filial
+    # query 7: produtos com estoque abaixo do mínimo por filial
     endereco_filial = request.args.get("endereco_filial", default=None, type=str)
 
     result = RelatoriosDatabase().produtos_estoque_abaixo_minimo(endereco_filial)
@@ -67,7 +67,7 @@ def get_produtos_estoque_abaixo_minimo():
 
 @relatorios_blueprint.route("/relatorios/fornecedores-maior-volume-pedidos", methods=["GET"])
 def get_fornecedores_maior_volume_pedidos():
-    # Query 8: Fornecedores com maior volume e valor de pedidos
+    # query 8: fornecedores com maior volume e valor de pedidos
     limite = request.args.get("limite", default=10, type=int)
     
     result = RelatoriosDatabase().fornecedores_maior_volume_pedidos(limite)
@@ -75,7 +75,7 @@ def get_fornecedores_maior_volume_pedidos():
 
 @relatorios_blueprint.route("/relatorios/distribuicao-vendas-forma-pagamento", methods=["GET"])
 def get_distribuicao_vendas_forma_pagamento():
-    # Query 9: Distribuição das vendas por forma de pagamento
+    # query 9: distribuição de vendas por forma de pagamento
     ano = request.args.get("ano", type=int)
     mes = request.args.get("mes", type=int)
     
@@ -84,7 +84,7 @@ def get_distribuicao_vendas_forma_pagamento():
 
 @relatorios_blueprint.route("/relatorios/clientes-gasto-acima-media", methods=["GET"])
 def get_clientes_gasto_acima_media():
-    # Query 10: Clientes com gasto acima da média dos clientes
+    # query 10: clientes com gasto acima da média dos total de clientes
     limite = request.args.get("limite", type=int)
     
     if limite is not None and limite <= 0:

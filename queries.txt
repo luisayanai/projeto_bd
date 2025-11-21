@@ -116,7 +116,7 @@ SELECT
     p.tamanho,
     SUM(iv.quantidade) AS quantidade_vendida,
     COUNT(d.iddevolucao) AS quantidade_devolvida,
-    (COUNT(d.iddevolucao) * 100.0 / SUM(iv.quantidade)) AS percentual_devolucao
+    (COUNT(d.iddevolucao) * 100.0 / NULLIF(SUM(iv.quantidade), 0)) AS percentual_devolucao
 FROM PRODUTO p
 JOIN ITEM_VENDA iv ON iv.idproduto = p.idproduto
 LEFT JOIN DEVOLUCAO d ON d.idproduto = p.idproduto
@@ -159,10 +159,11 @@ SELECT
     COUNT(DISTINCT v.idvenda) AS quantidade_vendas,
     SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS valor_total,
     (SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto)) 
-        / COUNT(DISTINCT v.idvenda) AS ticket_medio
+        / NULLIF(COUNT(DISTINCT v.idvenda), 0) AS ticket_medio
 FROM VENDA v
 JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
 JOIN PRODUTO p ON p.idproduto = iv.idproduto
+WHERE v.forma_pag IS NOT NULL
 GROUP BY v.forma_pag
 ORDER BY valor_total DESC;
 

@@ -11,11 +11,11 @@ class DevolucaoDatabase():
         query = "SELECT * FROM devolucao"
         conditions = []
         if id_devolucao:
-            conditions.append(f"id_devolucao = {id_devolucao}")
+            conditions.append(f"iddevolucao = {id_devolucao}")
         if id_venda:
-            conditions.append(f"id_venda = {id_venda}")
+            conditions.append(f"idvenda = {id_venda}")
         if cpf_cliente:
-            conditions.append(f"cpf_cliente = '{cpf_cliente}'")
+            conditions.append(f"cpfcliente = '{cpf_cliente}'")
         
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -23,12 +23,12 @@ class DevolucaoDatabase():
         return self.db.execute_select_all(query)
 
     
-    def cadastra_devolucao(self, id_venda: int, id_produto: int, credito: float, cpf_cliente: str):
-        statement = f"INSERT INTO devolucao (id_venda, id_produto, credito, cpf_cliente) VALUES ({id_venda}, {id_produto}, {credito}, '{cpf_cliente}')"
+    def cadastra_devolucao(self, id_devolucao: int, id_venda: int, id_produto: int, credito: float, cpf_cliente: str):
+        statement = f"INSERT INTO devolucao (iddevolucao, idvenda, idproduto, credito, cpfcliente) VALUES ({id_devolucao}, {id_venda}, {id_produto}, {credito}, '{cpf_cliente}')"
         
         return self.db.execute_statement(statement)
 
     def deleta_devolucao(self, id_devolucao: int):
-        statement = f"DELETE FROM devolucao WHERE id_devolucao = {id_devolucao}"
+        statement = f"DELETE FROM devolucao WHERE iddevolucao = {id_devolucao}"
         return self.db.execute_statement(statement)
 

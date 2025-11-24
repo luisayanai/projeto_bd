@@ -16,14 +16,21 @@ def get_clientes_fidelizados():
 @cliente_fidelizado_blueprint.route("/cliente_fidelizado", methods=["POST"])
 def post_cliente_fidelizado():
     json = request.get_json()
+    id_cadastro = json.get("id_cadastro")
     cpf_cliente = json.get("cpf_cliente")
     pontos = json.get("pontos")
     email = json.get("email")
 
-    if not cpf_cliente:
-        return jsonify("CPF do cliente é obrigatório"), 400
+    if not id_cadastro or not cpf_cliente:
+        return jsonify("ID do cadastro e CPF do cliente são obrigatórios"), 400
 
-    result = ClienteFidelizadoDatabase().cadastra_cliente_fidelizado(cpf_cliente, pontos, email)
+    try:
+        id_cadastro_int = int(id_cadastro)
+        pontos_int = int(pontos) if pontos is not None else None
+    except (TypeError, ValueError):
+        return jsonify("ID do cadastro e pontos precisam ser numéricos"), 400
+
+    result = ClienteFidelizadoDatabase().cadastra_cliente_fidelizado(id_cadastro_int, cpf_cliente, pontos_int, email)
     if result:
         return jsonify("Cliente fidelizado cadastrado"), 200
     return jsonify("Erro ao cadastrar cliente fidelizado"), 400
@@ -36,7 +43,12 @@ def put_cliente_fidelizado(id_cadastro):
     email = json.get("email")
     cpf_cliente = json.get("cpf_cliente")
 
-    result = ClienteFidelizadoDatabase().atualiza_cliente_fidelizado(id_cadastro, pontos, email, cpf_cliente)
+    try:
+        pontos_int = int(pontos) if pontos is not None else None
+    except (TypeError, ValueError):
+        return jsonify("Pontos precisam ser numéricos"), 400
+
+    result = ClienteFidelizadoDatabase().atualiza_cliente_fidelizado(id_cadastro, pontos_int, email, cpf_cliente)
     if result:
         return jsonify("Cliente fidelizado atualizado"), 200
     return jsonify("Erro ao atualizar cliente fidelizado"), 400

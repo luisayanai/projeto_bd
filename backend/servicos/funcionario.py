@@ -28,9 +28,9 @@ class FuncionarioDatabase():
     def cadastra_funcionario(self, cpf: str, nome: str, salario: float, endereco_filial: str, cpf_supervisor: str = None):
         # ENDEREÇOFILIAL é NOT NULL no schema
         if cpf_supervisor:
-            statement = f"INSERT INTO funcionario (cpf, nome, salario, cpfsupervisor, enderecofilial) VALUES ('{cpf}', '{nome}', {salario}, '{cpf_supervisor}', '{endereco_filial}')"
+            statement = f"INSERT INTO funcionario (cpf, nome, salario, cpfsupervisor, endereco_filial) VALUES ('{cpf}', '{nome}', {salario}, '{cpf_supervisor}', '{endereco_filial}')"
         else:
-            statement = f"INSERT INTO funcionario (cpf, nome, salario, enderecofilial) VALUES ('{cpf}', '{nome}', {salario}, '{endereco_filial}')"
+            statement = f"INSERT INTO funcionario (cpf, nome, salario, endereco_filial) VALUES ('{cpf}', '{nome}', {salario}, '{endereco_filial}')"
         
         return self.db.execute_statement(statement)
 
@@ -43,7 +43,7 @@ class FuncionarioDatabase():
         if cpf_supervisor:
             updates.append(f"cpfsupervisor = '{cpf_supervisor}'")
         if endereco_filial:
-            updates.append(f"enderecofilial = '{endereco_filial}'")
+            updates.append(f"endereco_filial = '{endereco_filial}'")
         
         if not updates:
             return False

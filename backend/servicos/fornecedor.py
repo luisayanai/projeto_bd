@@ -7,13 +7,13 @@ class FornecedorDatabase():
         self.db = db_provider
 
     # funções de controle (queries simples, não vamos mostrar na apresentação)
-    def get_fornecedores(self, cnpj: str = None, id_produto: int = None):
+    def get_fornecedores(self, cnpj: str = None, nome: str = None):
         query = "SELECT * FROM fornecedor"
         conditions = []
         if cnpj:
             conditions.append(f"cnpj = '{cnpj}'")
-        if id_produto:
-            conditions.append(f"idproduto = {id_produto}")
+        if nome:
+            conditions.append(f"nome ILIKE '%{nome}%'")
         
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -24,16 +24,15 @@ class FornecedorDatabase():
         query = f"SELECT * FROM fornecedor WHERE cnpj = '{cnpj}'"
         return self.db.execute_select_one(query)
     
-    def cadastra_fornecedor(self, cnpj: str, nome: str, id_produto: int, preco: int, telefone: int = None, email: str = None):
-        # IDPRODUTO e PREÇO são NOT NULL no schema
-        if telefone and email:
-            statement = f"INSERT INTO fornecedor (cnpj, nome, telefone, email, idproduto, preco) VALUES ('{cnpj}', '{nome}', {telefone}, '{email}', {id_produto}, {preco})"
-        elif telefone:
-            statement = f"INSERT INTO fornecedor (cnpj, nome, telefone, idproduto, preco) VALUES ('{cnpj}', '{nome}', {telefone}, {id_produto}, {preco})"
+    def cadastra_fornecedor(self, cnpj: str, nome: str, telefone: int | None = None, email: str | None = None):
+        if telefone is not None and email:
+            statement = f"INSERT INTO fornecedor (cnpj, nome, telefone, email) VALUES ('{cnpj}', '{nome}', {telefone}, '{email}')"
+        elif telefone is not None:
+            statement = f"INSERT INTO fornecedor (cnpj, nome, telefone) VALUES ('{cnpj}', '{nome}', {telefone})"
         elif email:
-            statement = f"INSERT INTO fornecedor (cnpj, nome, email, idproduto, preco) VALUES ('{cnpj}', '{nome}', '{email}', {id_produto}, {preco})"
+            statement = f"INSERT INTO fornecedor (cnpj, nome, email) VALUES ('{cnpj}', '{nome}', '{email}')"
         else:
-            statement = f"INSERT INTO fornecedor (cnpj, nome, idproduto, preco) VALUES ('{cnpj}', '{nome}', {id_produto}, {preco})"
+            statement = f"INSERT INTO fornecedor (cnpj, nome) VALUES ('{cnpj}', '{nome}')"
         
         return self.db.execute_statement(statement)
 

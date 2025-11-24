@@ -8,25 +8,22 @@ fornecedor_blueprint = Blueprint("fornecedor", __name__)
 @fornecedor_blueprint.route("/fornecedor", methods=["GET"])
 def get_fornecedores():
     cnpj = request.args.get("cnpj", "")
-    id_produto = request.args.get("id_produto", "")
+    nome = request.args.get("nome", "")
     
-    id_produto_int = int(id_produto) if id_produto else None
-    return jsonify(FornecedorDatabase().get_fornecedores(cnpj, id_produto_int)), 200
+    return jsonify(FornecedorDatabase().get_fornecedores(cnpj, nome)), 200
 
 @fornecedor_blueprint.route("/fornecedor", methods=["POST"])
 def post_fornecedor():
     json = request.get_json()
     cnpj = json.get("cnpj")
     nome = json.get("nome")
-    id_produto = json.get("id_produto")
-    preco = json.get("preco")
     telefone = json.get("telefone")
     email = json.get("email")
 
-    if not cnpj or not nome or id_produto is None or preco is None:
-        return jsonify("CNPJ, nome, ID do produto e preço são obrigatórios"), 400
+    if not cnpj or not nome:
+        return jsonify("CNPJ e nome são obrigatórios"), 400
 
-    result = FornecedorDatabase().cadastra_fornecedor(cnpj, nome, id_produto, preco, telefone, email)
+    result = FornecedorDatabase().cadastra_fornecedor(cnpj, nome, telefone, email)
     if result:
         return jsonify("Fornecedor cadastrado"), 200
     return jsonify("Erro ao cadastrar fornecedor"), 400

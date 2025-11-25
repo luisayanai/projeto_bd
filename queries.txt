@@ -68,7 +68,7 @@ JOIN CLIENTE c ON c.cpf = t.cpf_cliente
 LEFT JOIN CLIENTE_FIDELIZADO cf ON cf.cpfcliente = c.cpf
 GROUP BY EhFidelizado, NaoFidelizado;
 
-4) Ranking de funcionários por vendas no último mês: funcionários com maior valor vendido no último mês, mostrando apenas quem vendeu mais de 5.000 reais.
+4) Ranking de funcion?rios por vendas: funcion?rios com maior valor vendido, podendo filtrar por m?s (e ano) espec?fico.
 
 SELECT
     f.cpf,
@@ -87,9 +87,7 @@ FROM (
     GROUP BY v.idvenda, v.cpf_funcionario, v.data_compra, v.valor_desconto
 ) AS t
 JOIN FUNCIONARIO f ON f.cpf = t.cpf_funcionario
-WHERE t.data_compra >= CURRENT_DATE - INTERVAL '1 month'
 GROUP BY f.cpf, f.nome
-HAVING SUM(t.valor_liquido) > 5000
 ORDER BY valor_total_vendido DESC;
 
 5) Produtos mais vendidos (acima de 50 unidades): produtos com mais de 50 unidades vendidas no total.

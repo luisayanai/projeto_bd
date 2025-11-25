@@ -4,3 +4,4 @@
 - add diagrama lógico e MEER
 - backend OK
 - fronted
+- fazer readme 

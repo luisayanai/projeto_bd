@@ -34,10 +34,16 @@ def get_ticket_medio_fidelizado():
 
 @relatorios_blueprint.route("/relatorios/ranking-funcionarios-vendas", methods=["GET"])
 def get_ranking_funcionarios_vendas():
-    # query 4: ranking de funcionários por vendas
-    meses = request.args.get("meses", default=1, type=int)
-    valor_minimo = request.args.get("valor_minimo", default=5000.0, type=float)
-    result = RelatoriosDatabase().ranking_funcionarios_vendas(meses, valor_minimo)
+    # query 4: ranking de funcion?rios por vendas
+    ano = request.args.get("ano", type=int)
+    mes = request.args.get("mes", type=int)
+
+    if mes is not None and (mes < 1 or mes > 12):
+        return jsonify("Mês deve estar entre 1 e 12"), 400
+    if ano is not None and ano <= 0:
+        return jsonify("Ano deve ser maior que zero"), 400
+
+    result = RelatoriosDatabase().ranking_funcionarios_vendas(ano, mes)
 
     return jsonify(result), 200
 

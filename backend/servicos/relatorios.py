@@ -166,32 +166,34 @@ class RelatoriosDatabase():
         return self.db.execute_select_all(query)
 
     # query 4
-    def ranking_funcionarios_vendas(self, meses: int = 1, valor_minimo: float = 5000.0):
+    def ranking_funcionarios_vendas(self, ano: int = None, mes: int = None):
         """
-        Retorna funcionários com maior valor vendido nos últimos N meses (ostra apenas quem vendeu mais que valor_minimo)
+        Retorna funcionários ordenados pelo valor total vendido,
+        opcionalmente filtrando por ano e/ou mês específicos.
+        Inclui funcionários sem vendas no período com total zerado.
         """
+        filtros = []
+        if ano is not None:
+            filtros.append(f"EXTRACT(YEAR FROM v.data_compra) = {ano}")
+        if mes is not None:
+            filtros.append(f"EXTRACT(MONTH FROM v.data_compra) = {mes}")
+
+        venda_join = "LEFT JOIN venda v ON v.cpf_funcionario = f.cpf"
+        if filtros:
+            venda_join += " AND " + " AND ".join(filtros)
+
         query = f"""
         SELECT
             f.cpf,
             f.nome,
-            COUNT(t.idvenda) AS quantidade_vendas,
-            SUM(t.valor_liquido) AS valor_total_vendido
-        FROM (
-            SELECT
-                v.idvenda,
-                v.cpf_funcionario,
-                v.data_compra,
-                SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
-            FROM venda v
-            JOIN item_venda iv ON iv.idvenda = v.idvenda
-            JOIN produto p ON p.idproduto = iv.idproduto
-            GROUP BY v.idvenda, v.cpf_funcionario, v.data_compra, v.valor_desconto
-        ) AS t
-        JOIN funcionario f ON f.cpf = t.cpf_funcionario
-        WHERE t.data_compra >= CURRENT_DATE - INTERVAL '{meses} month'
+            COUNT(DISTINCT v.idvenda) AS quantidade_vendas,
+            COALESCE(SUM(iv.quantidade * p.preco_venda) - SUM(COALESCE(v.valor_desconto, 0)), 0) AS valor_total_vendido
+        FROM funcionario f
+        {venda_join}
+        LEFT JOIN item_venda iv ON iv.idvenda = v.idvenda
+        LEFT JOIN produto p ON p.idproduto = iv.idproduto
         GROUP BY f.cpf, f.nome
-        HAVING SUM(t.valor_liquido) > {valor_minimo}
-        ORDER BY valor_total_vendido DESC;
+        ORDER BY valor_total_vendido DESC, f.nome;
         """
         return self.db.execute_select_all(query)
 

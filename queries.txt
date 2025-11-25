@@ -68,7 +68,7 @@ JOIN CLIENTE c ON c.cpf = t.cpf_cliente
 LEFT JOIN CLIENTE_FIDELIZADO cf ON cf.cpfcliente = c.cpf
 GROUP BY EhFidelizado, NaoFidelizado;
 
-4) Ranking de funcionarios por vendas: funcionarios com maior valor vendido, podendo filtrar por mes (e ano) especifico. Inclui todos os funcionarios, mesmo sem vendas (total 0).
+4) Ranking de funcionarios por vendas: funcionarios com maior valor vendido, limitando o numero de linhas retornadas (default 10). Inclui todos os funcionarios, mesmo sem vendas (total 0).
 
 SELECT
     f.cpf,
@@ -88,7 +88,8 @@ LEFT JOIN (
     GROUP BY v.idvenda, v.cpf_funcionario, v.valor_desconto
 ) AS t ON t.cpf_funcionario = f.cpf
 GROUP BY f.cpf, f.nome
-ORDER BY valor_total_vendido DESC;
+ORDER BY valor_total_vendido DESC
+LIMIT 10;
 
 5) Produtos mais vendidos (acima ou igual a 50 unidades): produtos com pelo menos 50 unidades vendidas no total.
 

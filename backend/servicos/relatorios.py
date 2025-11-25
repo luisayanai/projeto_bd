@@ -165,23 +165,12 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 
-    # query 4
-    def ranking_funcionarios_vendas(self, ano: int = None, mes: int = None):
+        # query 4
+    def ranking_funcionarios_vendas(self, limite: int = 10):
         """
-        Retorna funcionários ordenados pelo valor total vendido,
-        opcionalmente filtrando por ano e/ou mês específicos.
-        Inclui funcionários sem vendas no período com total zerado.
+        Retorna funcionarios ordenados pelo valor total vendido,
+        com limite de linhas retornadas.
         """
-        filtros = []
-        if ano is not None:
-            filtros.append(f"EXTRACT(YEAR FROM v.data_compra) = {ano}")
-        if mes is not None:
-            filtros.append(f"EXTRACT(MONTH FROM v.data_compra) = {mes}")
-
-        where_clause = ""
-        if filtros:
-            where_clause = "WHERE " + " AND ".join(filtros)
-
         query = f"""
         SELECT
             f.cpf,
@@ -195,17 +184,16 @@ class RelatoriosDatabase():
                 v.cpf_funcionario,
                 SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
             FROM venda v
-            LEFT JOIN item_venda iv ON iv.idvenda = v.idvenda
-            LEFT JOIN produto p ON p.idproduto = iv.idproduto
-            {where_clause}
+            JOIN item_venda iv ON iv.idvenda = v.idvenda
+            JOIN produto p ON p.idproduto = iv.idproduto
             GROUP BY v.idvenda, v.cpf_funcionario, v.valor_desconto
         ) AS t ON t.cpf_funcionario = f.cpf
         GROUP BY f.cpf, f.nome
-        ORDER BY valor_total_vendido DESC, f.nome;
+        ORDER BY valor_total_vendido DESC, f.nome
+        LIMIT {limite};
         """
         return self.db.execute_select_all(query)
-
-    # query 5
+# query 5
     def produtos_mais_vendidos(self):
         """
         Retorna produtos com mais de quantidade_minima unidades vendidas

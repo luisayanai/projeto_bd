@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatorios - Consultas</title>
+  
+</head>
+<body>
+  <header>
+  
+  </header>
+
+  <div class="inline">
+    <label style="flex:1">
+      Base URL da API
+      <input id="baseUrl" value="http://localhost:8000" />
+    </label>
+  </div>
+
+  <div class="container" id="cards"></div>
+
+  <script>
+    const queries = [
+      {
+        id: 1,
+        title: "Faturamento mensal por filial",
+        rota: "/relatorios/faturamento-mensal-filial",
+        fields: [
+          { name: "ano", type: "number", placeholder: "Ex: 2025" },
+          { name: "mes", type: "number", placeholder: "1-12" },
+        ],
+      },
+      {
+        id: 2,
+        title: "Top clientes que mais gastaram",
+        rota: "/relatorios/top-clientes-mais-gastaram",
+        fields: [{ name: "limite", type: "number", placeholder: "Default: 10" }],
+      },
+      {
+        id: 3,
+        title: "Ticket medio fidelizado vs nao fidelizado",
+        rota: "/relatorios/ticket-medio-fidelizado",
+        fields: [
+          { name: "ano", type: "number", placeholder: "Ex: 2025" },
+          { name: "mes", type: "number", placeholder: "1-12" },
+        ],
+      },
+      {
+        id: 4,
+        title: "Ranking de funcionarios por vendas",
+        rota: "/relatorios/ranking-funcionarios-vendas",
+        fields: [
+          { name: "limite", type: "number", placeholder: "Default: 10" },
+        ],
+      },
+      {
+        id: 5,
+        title: "Produtos mais vendidos",
+        rota: "/relatorios/produtos-mais-vendidos",
+        fields: [
+          { name: "quantidade_minima", type: "number", placeholder: "Default: 50" },
+        ],
+      },
+      {
+        id: 6,
+        title: "Produtos com maior indice de devolucao",
+        rota: "/relatorios/produtos-maior-indice-devolucao",
+        fields: [{ name: "limite", type: "number", placeholder: "Default: 10" }],
+      },
+      {
+        id: 7,
+        title: "Produtos com estoque abaixo do minimo",
+        rota: "/relatorios/produtos-estoque-abaixo-minimo",
+        fields: [{ name: "endereco_filial", type: "text", placeholder: "Opcional" }],
+      },
+      {
+        id: 8,
+        title: "Fornecedores por volume de pedidos",
+        rota: "/relatorios/fornecedores-maior-volume-pedidos",
+        fields: [{ name: "limite", type: "number", placeholder: "Default: 10" }],
+      },
+      {
+        id: 9,
+        title: "Distribuicao por forma de pagamento",
+        rota: "/relatorios/distribuicao-vendas-forma-pagamento",
+        fields: [
+          { name: "ano", type: "number", placeholder: "Ex: 2025" },
+          { name: "mes", type: "number", placeholder: "1-12" },
+        ],
+      },
+      {
+        id: 10,
+        title: "Clientes com gasto acima da media",
+        rota: "/relatorios/clientes-gasto-acima-media",
+        fields: [{ name: "limite", type: "number", placeholder: "Opcional" }],
+      },
+    ];
+
+    const cards = document.getElementById("cards");
+
+    function buildCard(q) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <h2>${q.id}. ${q.title}</h2>
+        <small>${q.rota}</small>
+        <form data-rota="${q.rota}" id="form-${q.id}">
+          ${q.fields
+            .map(
+              (f) => `
+              <label>${f.name}
+                <input name="${f.name}" type="${f.type}" placeholder="${f.placeholder || ""}">
+              </label>
+            `
+            )
+            .join("")}
+          <button type="submit">Executar</button>
+        </form>
+        <div class="output" id="output-${q.id}"></div>
+      `;
+      card.querySelector("form").addEventListener("submit", (e) => handleSubmit(e, q.id));
+      return card;
+    }
+
+    async function handleSubmit(event, id) {
+      event.preventDefault();
+      const form = event.target;
+      const rota = form.getAttribute("data-rota");
+      const baseUrl = document.getElementById("baseUrl").value.replace(/\/$/, "");
+      const params = new URLSearchParams();
+      for (const el of form.elements) {
+        if (el.name && el.value !== "") params.append(el.name, el.value);
+      }
+      const url = `${baseUrl}${rota}${params.toString() ? "?" + params.toString() : ""}`;
+      const output = document.getElementById(`output-${id}`);
+      output.textContent = "Carregando...";
+      try {
+        const res = await fetch(url);
+        let data;
+        try {
+          data = await res.json();
+        } catch {
+          const text = await res.text();
+          throw new Error(`Resposta nao-JSON (status ${res.status}): ${text}`);
+        }
+        if (!res.ok) {
+          throw new Error(JSON.stringify(data));
+        }
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = "Erro: " + err.message;
+      }
+    }
+
+    queries.forEach((q) => cards.appendChild(buildCard(q)));
+  </script>
+</body>
+</html>

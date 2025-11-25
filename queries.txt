@@ -68,40 +68,46 @@ JOIN CLIENTE c ON c.cpf = t.cpf_cliente
 LEFT JOIN CLIENTE_FIDELIZADO cf ON cf.cpfcliente = c.cpf
 GROUP BY EhFidelizado, NaoFidelizado;
 
-4) Ranking de funcion?rios por vendas: funcion?rios com maior valor vendido, podendo filtrar por m?s (e ano) espec?fico.
+4) Ranking de funcionarios por vendas: funcionarios com maior valor vendido, podendo filtrar por mes (e ano) especifico. Inclui todos os funcionarios, mesmo sem vendas (total 0).
 
 SELECT
     f.cpf,
     f.nome,
-    COUNT(t.idvenda)      AS quantidade_vendas,
-    SUM(t.valor_liquido)  AS valor_total_vendido
-FROM (
+    COUNT(DISTINCT t.idvenda) AS quantidade_vendas,
+    COALESCE(SUM(t.valor_liquido), 0) AS valor_total_vendido
+FROM FUNCIONARIO f
+LEFT JOIN (
     SELECT
         v.idvenda,
         v.cpf_funcionario,
-        v.data_compra,
         SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
     FROM VENDA v
-    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
-    JOIN PRODUTO p ON p.idproduto = iv.idproduto
-    GROUP BY v.idvenda, v.cpf_funcionario, v.data_compra, v.valor_desconto
-) AS t
-JOIN FUNCIONARIO f ON f.cpf = t.cpf_funcionario
+    LEFT JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+    LEFT JOIN PRODUTO p ON p.idproduto = iv.idproduto
+    -- opcional: filtros de ano/mes com EXTRACT(YEAR/MONTH FROM v.data_compra)
+    GROUP BY v.idvenda, v.cpf_funcionario, v.valor_desconto
+) AS t ON t.cpf_funcionario = f.cpf
 GROUP BY f.cpf, f.nome
 ORDER BY valor_total_vendido DESC;
 
-5) Produtos mais vendidos (acima de 50 unidades): produtos com mais de 50 unidades vendidas no total.
+5) Produtos mais vendidos (acima ou igual a 50 unidades): produtos com pelo menos 50 unidades vendidas no total.
 
+WITH VENDAS_POR_PRODUTO AS (
+    SELECT
+        iv.idproduto,
+        SUM(iv.quantidade) AS quantidade_vendida
+    FROM ITEM_VENDA iv
+    GROUP BY iv.idproduto
+)
 SELECT
     p.idproduto,
     p.categoria,
     p.cor,
     p.tamanho,
-    SUM(iv.quantidade) AS quantidade_vendida
+    COALESCE(vp.quantidade_vendida, 0) AS quantidade_vendida
 FROM PRODUTO p
-JOIN ITEM_VENDA iv ON iv.idproduto = p.idproduto
-GROUP BY p.idproduto, p.categoria, p.cor, p.tamanho
-HAVING SUM(iv.quantidade) > 50
+LEFT JOIN VENDAS_POR_PRODUTO vp ON vp.idproduto = p.idproduto
+WHERE COALESCE(vp.quantidade_vendida, 0) >= 50
 ORDER BY quantidade_vendida DESC;
 
 6) Produtos com maior índice de devolução: compara a quantidade total vendida com a quantidade devolvida, mostrando o percentual de devolução.
@@ -149,49 +155,55 @@ JOIN PRODUTO p ON p.idproduto = ped.idproduto
 GROUP BY f.cnpj, f.nome
 ORDER BY valor_estimado DESC;
 
-9) Distribuição das vendas por forma de pagamento: para cada forma de pagamento o número de vendas realizadas, o valor total vendido e o valor médio.
+9) Distribuicao das vendas por forma de pagamento: para cada forma de pagamento o numero de vendas realizadas, o valor total vendido e o valor medio, evitando subtrair desconto mais de uma vez por venda.
 
+WITH VENDAS_AGRUPADAS AS (
+    SELECT
+        v.idvenda,
+        v.forma_pag,
+        SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
+    FROM VENDA v
+    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+    JOIN PRODUTO p ON p.idproduto = iv.idproduto
+    -- opcional: filtros de ano/mes com EXTRACT(YEAR/MONTH FROM v.data_compra) e forma_pag IS NOT NULL
+    GROUP BY v.idvenda, v.forma_pag, v.valor_desconto
+)
 SELECT
-    v.forma_pag,
-    COUNT(DISTINCT v.idvenda) AS quantidade_vendas,
-    SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS valor_total,
-    (SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto)) 
-        / NULLIF(COUNT(DISTINCT v.idvenda), 0) AS ticket_medio
-FROM VENDA v
-JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
-JOIN PRODUTO p ON p.idproduto = iv.idproduto
-WHERE v.forma_pag IS NOT NULL
-GROUP BY v.forma_pag
+    forma_pag,
+    COUNT(*) AS quantidade_vendas,
+    SUM(valor_liquido) AS valor_total,
+    SUM(valor_liquido) / NULLIF(COUNT(*), 0) AS ticket_medio
+FROM VENDAS_AGRUPADAS
+GROUP BY forma_pag
 ORDER BY valor_total DESC;
 
-10) Clientes com gasto acima da média dos clientes (também informa se são fidelizados)
+10) Clientes com gasto acima da media dos clientes (tambem informa se sao fidelizados)
 
+WITH VENDAS_POR_CLIENTE AS (
+    SELECT
+        v.idvenda,
+        v.cpf_cliente,
+        SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS total_venda
+    FROM VENDA v
+    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
+    JOIN PRODUTO p ON p.idproduto = iv.idproduto
+    GROUP BY v.idvenda, v.cpf_cliente, v.valor_desconto
+),
+GASTOS_CLIENTES AS (
+    SELECT
+        cpf_cliente,
+        SUM(total_venda) AS total_gasto
+    FROM VENDAS_POR_CLIENTE
+    GROUP BY cpf_cliente
+)
 SELECT
     c.cpf,
     c.nome,
     (cf.cpfcliente IS NOT NULL) AS EhFidelizado,
     (cf.cpfcliente IS NULL)     AS NaoFidelizado,
     gc.total_gasto
-FROM (
-    SELECT
-        v.cpf_cliente,
-        SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS total_gasto
-    FROM VENDA v
-    JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
-    JOIN PRODUTO p ON p.idproduto = iv.idproduto
-    GROUP BY v.cpf_cliente
-) AS gc
+FROM GASTOS_CLIENTES gc
 JOIN CLIENTE c ON c.cpf = gc.cpf_cliente
 LEFT JOIN CLIENTE_FIDELIZADO cf ON cf.cpfcliente = c.cpf
-WHERE gc.total_gasto >
-    (SELECT AVG(total_gasto)
-     FROM (
-         SELECT
-             v.cpf_cliente,
-             SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS total_gasto
-         FROM VENDA v
-         JOIN ITEM_VENDA iv ON iv.idvenda = v.idvenda
-         JOIN PRODUTO p ON p.idproduto = iv.idproduto
-         GROUP BY v.cpf_cliente
-     ) AS medias)
+WHERE gc.total_gasto > (SELECT AVG(total_gasto) FROM GASTOS_CLIENTES)
 ORDER BY gc.total_gasto DESC;

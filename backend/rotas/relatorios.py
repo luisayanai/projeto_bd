@@ -50,9 +50,9 @@ def get_ranking_funcionarios_vendas():
 @relatorios_blueprint.route("/relatorios/produtos-mais-vendidos", methods=["GET"])
 def get_produtos_mais_vendidos():
     # query 5: produtos mais vendidos
-    quantidade_minima = request.args.get("quantidade_minima", default=50, type=int)
+    #quantidade_minima = request.args.get("quantidade_minima", default=50, type=int)
 
-    result = RelatoriosDatabase().produtos_mais_vendidos(quantidade_minima)
+    result = RelatoriosDatabase().produtos_mais_vendidos()
     return jsonify(result), 200
 
 @relatorios_blueprint.route("/relatorios/produtos-maior-indice-devolucao", methods=["GET"])

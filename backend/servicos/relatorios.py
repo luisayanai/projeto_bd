@@ -178,42 +178,55 @@ class RelatoriosDatabase():
         if mes is not None:
             filtros.append(f"EXTRACT(MONTH FROM v.data_compra) = {mes}")
 
-        venda_join = "LEFT JOIN venda v ON v.cpf_funcionario = f.cpf"
+        where_clause = ""
         if filtros:
-            venda_join += " AND " + " AND ".join(filtros)
+            where_clause = "WHERE " + " AND ".join(filtros)
 
         query = f"""
         SELECT
             f.cpf,
             f.nome,
-            COUNT(DISTINCT v.idvenda) AS quantidade_vendas,
-            COALESCE(SUM(iv.quantidade * p.preco_venda) - SUM(COALESCE(v.valor_desconto, 0)), 0) AS valor_total_vendido
+            COUNT(DISTINCT t.idvenda) AS quantidade_vendas,
+            COALESCE(SUM(t.valor_liquido), 0) AS valor_total_vendido
         FROM funcionario f
-        {venda_join}
-        LEFT JOIN item_venda iv ON iv.idvenda = v.idvenda
-        LEFT JOIN produto p ON p.idproduto = iv.idproduto
+        LEFT JOIN (
+            SELECT
+                v.idvenda,
+                v.cpf_funcionario,
+                SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
+            FROM venda v
+            LEFT JOIN item_venda iv ON iv.idvenda = v.idvenda
+            LEFT JOIN produto p ON p.idproduto = iv.idproduto
+            {where_clause}
+            GROUP BY v.idvenda, v.cpf_funcionario, v.valor_desconto
+        ) AS t ON t.cpf_funcionario = f.cpf
         GROUP BY f.cpf, f.nome
         ORDER BY valor_total_vendido DESC, f.nome;
         """
         return self.db.execute_select_all(query)
 
     # query 5
-    def produtos_mais_vendidos(self, quantidade_minima: int = 50):
+    def produtos_mais_vendidos(self):
         """
         Retorna produtos com mais de quantidade_minima unidades vendidas
         """
         query = f"""
+        WITH vendas_por_produto AS (
+            SELECT
+                iv.idproduto,
+                SUM(iv.quantidade) AS quantidade_vendida
+            FROM item_venda iv
+            GROUP BY iv.idproduto
+        )
         SELECT
             p.idproduto,
             p.categoria,
             p.cor,
             p.tamanho,
-            SUM(iv.quantidade) AS quantidade_vendida
+            COALESCE(vp.quantidade_vendida, 0) AS quantidade_vendida
         FROM produto p
-        JOIN item_venda iv ON iv.idproduto = p.idproduto
-        GROUP BY p.idproduto, p.categoria, p.cor, p.tamanho
-        HAVING SUM(iv.quantidade) > {quantidade_minima}
-        ORDER BY quantidade_vendida DESC;
+        LEFT JOIN vendas_por_produto vp ON vp.idproduto = p.idproduto
+        ORDER BY quantidade_vendida DESC, p.idproduto;
         """
         return self.db.execute_select_all(query)
 
@@ -302,28 +315,37 @@ class RelatoriosDatabase():
     # query 9
     def distribuicao_vendas_forma_pagamento(self, ano: int = None, mes: int = None):
         """
-        Retorna distribuição das vendas por forma de pagamento
-            se ano não for fornecido, usa todos os dados
-            se mes não for fornecido, usa todos os meses do ano
+        Retorna distribuicao das vendas por forma de pagamento
+            se ano nao for fornecido, usa todos os dados
+            se mes nao for fornecido, usa todos os meses do ano
         """
-        where_clause = "WHERE v.forma_pag IS NOT NULL"
-        if ano is not None and mes is not None:
-            where_clause = f"WHERE v.forma_pag IS NOT NULL AND EXTRACT(YEAR FROM v.data_compra) = {ano} AND EXTRACT(MONTH FROM v.data_compra) = {mes}"
-        elif ano is not None:
-            where_clause = f"WHERE v.forma_pag IS NOT NULL AND EXTRACT(YEAR FROM v.data_compra) = {ano}"
-        
+        filtros = ["v.forma_pag IS NOT NULL"]
+        if ano is not None:
+            filtros.append(f"EXTRACT(YEAR FROM v.data_compra) = {ano}")
+        if mes is not None:
+            filtros.append(f"EXTRACT(MONTH FROM v.data_compra) = {mes}")
+
+        where_clause = "WHERE " + " AND ".join(filtros)
+
         query = f"""
+        WITH vendas_agrupadas AS (
+            SELECT
+                v.idvenda,
+                v.forma_pag,
+                SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS valor_liquido
+            FROM venda v
+            JOIN item_venda iv ON iv.idvenda = v.idvenda
+            JOIN produto p ON p.idproduto = iv.idproduto
+            {where_clause}
+            GROUP BY v.idvenda, v.forma_pag, v.valor_desconto
+        )
         SELECT
-            v.forma_pag,
-            COUNT(DISTINCT v.idvenda) AS quantidade_vendas,
-            SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS valor_total,
-            (SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto)) 
-                / NULLIF(COUNT(DISTINCT v.idvenda), 0) AS ticket_medio
-        FROM venda v
-        JOIN item_venda iv ON iv.idvenda = v.idvenda
-        JOIN produto p ON p.idproduto = iv.idproduto
-        {where_clause}
-        GROUP BY v.forma_pag
+            forma_pag,
+            COUNT(*) AS quantidade_vendas,
+            SUM(valor_liquido) AS valor_total,
+            SUM(valor_liquido) / NULLIF(COUNT(*), 0) AS ticket_medio
+        FROM vendas_agrupadas
+        GROUP BY forma_pag
         ORDER BY valor_total DESC;
         """
         return self.db.execute_select_all(query)
@@ -337,34 +359,33 @@ class RelatoriosDatabase():
         limit_clause = f"LIMIT {limite}" if limite is not None else ""
         
         query = f"""
+        WITH vendas_por_cliente AS (
+            SELECT
+                v.cpf_cliente,
+                SUM(iv.quantidade * p.preco_venda) - v.valor_desconto AS total_venda
+            FROM venda v
+            JOIN item_venda iv ON iv.idvenda = v.idvenda
+            JOIN produto p ON p.idproduto = iv.idproduto
+            GROUP BY v.idvenda, v.cpf_cliente, v.valor_desconto
+        ),
+        gastos_clientes AS (
+            SELECT
+                cpf_cliente,
+                SUM(total_venda) AS total_gasto
+            FROM vendas_por_cliente
+            GROUP BY cpf_cliente
+        )
         SELECT
             c.cpf,
             c.nome,
             (cf.cpfcliente IS NOT NULL) AS eh_fidelizado,
             (cf.cpfcliente IS NULL) AS nao_fidelizado,
             gc.total_gasto
-        FROM (
-            SELECT
-                v.cpf_cliente,
-                SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS total_gasto
-            FROM venda v
-            JOIN item_venda iv ON iv.idvenda = v.idvenda
-            JOIN produto p ON p.idproduto = iv.idproduto
-            GROUP BY v.cpf_cliente
-        ) AS gc
+        FROM gastos_clientes gc
         JOIN cliente c ON c.cpf = gc.cpf_cliente
         LEFT JOIN cliente_fidelizado cf ON cf.cpfcliente = c.cpf
         WHERE gc.total_gasto >
-            (SELECT AVG(total_gasto)
-             FROM (
-                 SELECT
-                     v.cpf_cliente,
-                     SUM(iv.quantidade * p.preco_venda) - SUM(v.valor_desconto) AS total_gasto
-                 FROM venda v
-                 JOIN item_venda iv ON iv.idvenda = v.idvenda
-                 JOIN produto p ON p.idproduto = iv.idproduto
-                 GROUP BY v.cpf_cliente
-             ) AS medias)
+            (SELECT AVG(total_gasto) FROM gastos_clientes)
         ORDER BY gc.total_gasto DESC
         {limit_clause};
         """

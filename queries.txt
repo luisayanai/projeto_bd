@@ -1,8 +1,7 @@
 1) Faturamento mensal por filial no ano atual: para cada filial e para cada mês do ano atual, mostra o faturamento bruto, o total de descontos aplicados e o faturamento líquido, considerando todas as vendas realizadas e seus produtos associados.
 
 SELECT
-    t.filial,
-    EXTRACT(YEAR FROM t.data_compra)  AS ano,
+    t.filial, EXTRACT(YEAR FROM t.data_compra)  AS ano,
     EXTRACT(MONTH FROM t.data_compra) AS mes,
     SUM(t.valor_bruto)    AS faturamento_bruto,
     SUM(t.desconto)       AS descontos_totais,

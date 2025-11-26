@@ -91,7 +91,7 @@ GROUP BY f.cpf, f.nome
 ORDER BY valor_total_vendido DESC
 LIMIT 10;
 
-5) Produtos mais vendidos (acima ou igual a 50 unidades): produtos com pelo menos 50 unidades vendidas no total.
+5) Ranking de produtos mais vendidos: retorna os produtos mais vendidos, limitado a N linhas (default 10).
 
 WITH VENDAS_POR_PRODUTO AS (
     SELECT
@@ -108,8 +108,8 @@ SELECT
     COALESCE(vp.quantidade_vendida, 0) AS quantidade_vendida
 FROM PRODUTO p
 LEFT JOIN VENDAS_POR_PRODUTO vp ON vp.idproduto = p.idproduto
-WHERE COALESCE(vp.quantidade_vendida, 0) >= 50
-ORDER BY quantidade_vendida DESC;
+ORDER BY quantidade_vendida DESC
+LIMIT 10;
 
 6) Produtos com maior índice de devolução: compara a quantidade total vendida com a quantidade devolvida, mostrando o percentual de devolução.
 

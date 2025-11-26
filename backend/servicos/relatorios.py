@@ -39,7 +39,7 @@ class RelatoriosDatabase():
             ) AS t
             WHERE EXTRACT(YEAR FROM t.data_compra) = EXTRACT(YEAR FROM CURRENT_DATE)
             GROUP BY t.filial, EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra)
-            ORDER BY EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra), t.filial;
+            ORDER BY filial;
             """
         elif mes is None:
             query = f"""
@@ -67,7 +67,7 @@ class RelatoriosDatabase():
             ) AS t
             WHERE EXTRACT(YEAR FROM t.data_compra) = {ano}
             GROUP BY t.filial, EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra)
-            ORDER BY EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra), t.filial;
+            ORDER BY filial;
             """
         else:
             query = f"""
@@ -95,7 +95,7 @@ class RelatoriosDatabase():
             ) AS t
             WHERE EXTRACT(YEAR FROM t.data_compra) = {ano} AND EXTRACT(MONTH FROM t.data_compra) = {mes}
             GROUP BY t.filial, EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra)
-            ORDER BY EXTRACT(YEAR FROM t.data_compra), EXTRACT(MONTH FROM t.data_compra), t.filial;
+            ORDER BY filial;
             """
         
         return self.db.execute_select_all(query)
@@ -194,9 +194,9 @@ class RelatoriosDatabase():
         """
         return self.db.execute_select_all(query)
 # query 5
-    def produtos_mais_vendidos(self):
+    def produtos_mais_vendidos(self, limite: int = 10):
         """
-        Retorna produtos com mais de quantidade_minima unidades vendidas
+        Retorna ranking dos produtos mais vendidos, limitado a N linhas.
         """
         query = f"""
         WITH vendas_por_produto AS (
@@ -214,7 +214,8 @@ class RelatoriosDatabase():
             COALESCE(vp.quantidade_vendida, 0) AS quantidade_vendida
         FROM produto p
         LEFT JOIN vendas_por_produto vp ON vp.idproduto = p.idproduto
-        ORDER BY quantidade_vendida DESC, p.idproduto;
+        ORDER BY quantidade_vendida DESC, p.idproduto
+        LIMIT {limite};
         """
         return self.db.execute_select_all(query)
 

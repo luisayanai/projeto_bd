@@ -47,9 +47,12 @@ def get_ranking_funcionarios_vendas():
 @relatorios_blueprint.route("/relatorios/produtos-mais-vendidos", methods=["GET"])
 def get_produtos_mais_vendidos():
     # query 5: produtos mais vendidos
-    #quantidade_minima = request.args.get("quantidade_minima", default=50, type=int)
+    limite = request.args.get("limite", default=10, type=int)
 
-    result = RelatoriosDatabase().produtos_mais_vendidos()
+    if limite is not None and limite <= 0:
+        return jsonify("Limite deve ser maior que zero"), 400
+
+    result = RelatoriosDatabase().produtos_mais_vendidos(limite)
     return jsonify(result), 200
 
 @relatorios_blueprint.route("/relatorios/produtos-maior-indice-devolucao", methods=["GET"])
